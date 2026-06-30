@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "TrueBite",
+    "slug": "truebite",
+    "scheme": "truebite",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#F4F2EC",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.truebite",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
+      }
+    },
+    "android": {
+      "package": "app.truebite",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "config": {
+        "googleMaps": {
+          "apiKey": "BURAYA_ANDROID_MAPS_SDK_ANAHTARI"
+        }
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}

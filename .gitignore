@@ -1,0 +1,21 @@
+# Sırlar — asla commit'lenmez
+.env
+.env.local
+.env.*.local
+*/**/.env
+*/**/.env.local
+
+# Bağımlılıklar & derleme çıktıları
+node_modules/
+.next/
+dist/
+.expo/
+.turbo/
+
+# Supabase yerel
+supabase/.branches/
+supabase/.temp/
+
+# OS / editör
+.DS_Store
+*.log
