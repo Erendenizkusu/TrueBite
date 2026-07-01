@@ -7,7 +7,7 @@ export function Brand({ size = 19 }: { size?: number }) {
       <Text style={{ fontFamily: font.extrabold, fontSize: size, color: colors.ink, letterSpacing: -0.6 }}>
         TrueBite
       </Text>
-      <Text style={{ fontFamily: font.extrabold, fontSize: size, color: colors.ember }}>.</Text>
+      <Text style={{ fontFamily: font.extrabold, fontSize: size, color: colors.sage }}>.</Text>
     </View>
   );
 }

@@ -21,7 +21,7 @@ export function SpotRow({ place, rank }: { place: ScoredPlace; rank: number }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold tracking-[-0.01em] sm:text-xl">{place.name}</h3>
+          <h3 className="text-lg font-bold tracking-[-0.015em] sm:text-xl">{place.name}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-stone">
             <span>{fmtDistance(place.distanceM)}</span>
             <span aria-hidden className="text-line">·</span>

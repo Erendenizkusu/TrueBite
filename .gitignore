@@ -19,3 +19,12 @@ supabase/.temp/
 # OS / editör
 .DS_Store
 *.log
+
+# Üçüncü-parti kurulan skill'ler (ui-ux-pro-max bundle) — repoya dahil değil, herkes kendi kurar
+.claude/skills/ui-ux-pro-max/
+.claude/skills/design-system/
+.claude/skills/ui-styling/
+.claude/skills/brand/
+.claude/skills/design/
+.claude/skills/banner-design/
+.claude/skills/slides/

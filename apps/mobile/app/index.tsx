@@ -1,78 +1,97 @@
-import { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { ScoredPlace } from "@truebite/shared";
 import { fetchNearby } from "@/lib/api";
-import { colors, font } from "@/lib/theme";
+import { colors, font, radius } from "@/lib/theme";
+import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
 import { SpotCard } from "@/components/SpotCard";
 
-// KONUM-BAĞIMSIZ: GPS-öncelikli. İzin yoksa fallback Rotterdam — her yerde çalışır.
-const FALLBACK = { lat: 51.9225, lng: 4.4792, label: "Rotterdam" };
+// KONUM-BAĞIMSIZ & konsept-öncelikli: kullanıcı butona basınca konum alınır.
+const FALLBACK = { lat: 51.9225, lng: 4.4792 }; // izin yoksa: Rotterdam
 
-type Coords = { lat: number; lng: number; label: string };
+type Status = "idle" | "locating" | "ready" | "denied";
+type Coords = { lat: number; lng: number };
 
 export default function Discover() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [catIdx, setCatIdx] = useState(0);
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [denied, setDenied] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+  const cat = CATEGORIES[catIdx]!;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          setDenied(true);
-          setCoords(FALLBACK);
-          return;
-        }
-        const pos = await Location.getCurrentPositionAsync({});
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: "Konumun" });
-      } catch {
-        setDenied(true);
-        setCoords(FALLBACK);
-      }
-    })();
-  }, []);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["nearby", coords?.lat, coords?.lng],
-    queryFn: () => fetchNearby(coords!.lat, coords!.lng),
-    enabled: !!coords,
+  const { data, isFetching } = useQuery({
+    queryKey: ["nearby", coords?.lat, coords?.lng, cat.type],
+    queryFn: () => fetchNearby(coords!.lat, coords!.lng, 2500, cat.type),
+    enabled: status === "ready" && !!coords,
   });
   const places = data?.places ?? [];
+
+  async function locateAndSearch() {
+    setStatus("locating");
+    try {
+      const { status: perm } = await Location.requestForegroundPermissionsAsync();
+      if (perm !== "granted") {
+        setCoords(FALLBACK);
+        setStatus("denied");
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({});
+      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      setStatus("ready");
+    } catch {
+      setCoords(FALLBACK);
+      setStatus("denied");
+    }
+  }
+  // "denied" durumunda da fallback ile sonuç göster
+  const ready = status === "ready" || status === "denied";
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: colors.paper }}>
       <View style={s.header}>
         <Brand />
-        <Pressable
-          style={s.mapBtn}
-          onPress={() => coords && router.push(`/map?lat=${coords.lat}&lng=${coords.lng}`)}
-        >
-          <View style={s.dotEmber} />
-          <Text style={s.mapBtnText}>harita</Text>
-        </Pressable>
+        <Text style={s.headerTag}>GERÇEK PUAN, GERÇEK MEKAN</Text>
       </View>
 
       <FlatList
-        data={places}
+        data={ready ? places : []}
         keyExtractor={(p: ScoredPlace) => p.placeId}
         renderItem={({ item, index }) => <SpotCard place={item} rank={index + 1} />}
         ListHeaderComponent={
           <Hero
-            count={places.length}
-            label={coords?.label ?? "…"}
+            cat={cat}
+            catIdx={catIdx}
+            onCat={setCatIdx}
+            status={status}
+            onLocate={locateAndSearch}
+            resultCount={ready ? places.length : null}
             cacheHit={data?.cacheHit}
-            denied={denied}
+            onMap={() =>
+              coords && router.push(`/map?lat=${coords.lat}&lng=${coords.lng}`)
+            }
           />
         }
-        ListEmptyComponent={isLoading || !coords ? <Loading /> : <Empty />}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 28 }}
+        ListEmptyComponent={
+          status === "locating" || (ready && isFetching) ? (
+            <Skeleton />
+          ) : ready ? (
+            <Empty />
+          ) : null
+        }
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -80,41 +99,117 @@ export default function Discover() {
 }
 
 function Hero({
-  count,
-  label,
+  cat,
+  catIdx,
+  onCat,
+  status,
+  onLocate,
+  resultCount,
   cacheHit,
-  denied,
+  onMap,
 }: {
-  count: number;
-  label: string;
+  cat: (typeof CATEGORIES)[number];
+  catIdx: number;
+  onCat: (i: number) => void;
+  status: Status;
+  onLocate: () => void;
+  resultCount: number | null;
   cacheHit?: boolean;
-  denied: boolean;
+  onMap: () => void;
 }) {
-  const tag = cacheHit == null ? "" : cacheHit ? " · ÖNBELLEK" : " · CANLI";
+  const locating = status === "locating";
   return (
-    <View style={{ paddingTop: 16, paddingBottom: 8 }}>
-      <Text style={s.eyebrow}>
-        {label.toUpperCase()} · {count} MEKAN{tag}
-      </Text>
+    <View style={{ paddingTop: 20 }}>
+      <View style={s.eyebrow}>
+        <View style={s.eyebrowDot} />
+        <Text style={s.eyebrowText}>DÜRÜST MEKAN KEŞFİ</Text>
+      </View>
+
       <Text style={s.h1}>
-        Sahte yorumlar değil,{"\n"}
-        <Text style={{ color: colors.ember }}>gerçekten</Text> en iyiler.
+        Gözlerini kapat!{"\n"}
+        <Text style={s.h1Italic}>Seni harika bir yere götürüyorum.</Text>
       </Text>
+
       <Text style={s.sub}>
-        Az yorumlu şişirilmiş puanları eleyen RealScore ile, konumundaki en iyi mekanlar.
+        Algoritmamız sahte puanları temizledi, yapay zekâmız binlerce yorumu senin için
+        özetledi. Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
+        <Text style={{ color: colors.ink, fontFamily: font.semibold }}>Hadi tıkla da gidelim.</Text>
       </Text>
-      {denied && (
-        <Text style={s.note}>Konum izni yok — örnek olarak Rotterdam gösteriliyor.</Text>
+
+      {/* kategori filtreleri — yatay kaydırma */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.chips}
+        style={{ marginHorizontal: -20, marginTop: 22 }}
+      >
+        {CATEGORIES.map((c, i) => {
+          const active = i === catIdx;
+          return (
+            <Pressable
+              key={c.label}
+              onPress={() => onCat(i)}
+              style={[s.chip, active ? s.chipActive : s.chipIdle]}
+            >
+              <Text style={[s.chipText, { color: active ? colors.paper : colors.ink }]}>
+                {c.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      {/* merkezi CTA */}
+      <Pressable
+        onPress={onLocate}
+        disabled={locating}
+        style={({ pressed }) => [s.cta, (pressed || locating) && { opacity: 0.75 }]}
+      >
+        <View style={s.ctaDot} />
+        <Text style={s.ctaText}>
+          {locating ? "Konumun bulunuyor…" : `Konumumdaki en popüler ${cat.ctaNoun} listele`}
+        </Text>
+      </Pressable>
+
+      <Text style={s.note}>
+        {status === "denied"
+          ? "Konuma ulaşamadık — örnek olarak Rotterdam gösteriliyor."
+          : "Tek dokunuş. En iyileri RealScore'a göre sıralarız — şişirilmiş puanlar elenir."}
+      </Text>
+
+      {/* sonuç başlığı */}
+      {resultCount != null && (
+        <View style={s.listHead}>
+          <Text style={s.listLabel}>
+            {cat.label === "Tümü" ? "EN İYİ MEKANLAR" : `EN İYİ ${cat.label.toUpperCase()} MEKANLARI`}
+          </Text>
+          <Pressable onPress={onMap} hitSlop={8}>
+            <Text style={s.mapLink}>
+              {cacheHit == null ? "" : cacheHit ? "● anlık · harita" : "● güncel · harita"}
+            </Text>
+          </Pressable>
+        </View>
       )}
-      <Text style={s.listLabel}>REALSCORE SIRALAMASI</Text>
     </View>
   );
 }
 
-function Loading() {
+function Skeleton() {
   return (
-    <View style={s.center}>
-      <ActivityIndicator color={colors.ember} />
+    <View style={{ marginTop: 4 }}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <View key={i} style={s.skRow}>
+          <View style={[s.skBox, { width: 26, height: 18 }]} />
+          <View style={{ flex: 1, gap: 9 }}>
+            <View style={[s.skBox, { width: "55%", height: 18 }]} />
+            <View style={[s.skBox, { width: "35%", height: 12 }]} />
+          </View>
+          <View style={{ alignItems: "flex-end", gap: 8 }}>
+            <View style={[s.skBox, { width: 54, height: 26 }]} />
+            <View style={[s.skBox, { width: 60, height: 12 }]} />
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -122,10 +217,8 @@ function Loading() {
 function Empty() {
   return (
     <View style={s.empty}>
-      <Text style={s.emptyTitle}>bu bölge için henüz veri yok</Text>
-      <Text style={s.emptyText}>
-        Google Places anahtarı bağlanınca bu konum ilk sorguda otomatik dolacak.
-      </Text>
+      <Text style={s.emptyTitle}>bu kategoride yakınında mekan bulunamadı</Text>
+      <Text style={s.emptyText}>Farklı bir kategori ya da daha geniş bir alan dene.</Text>
     </View>
   );
 }
@@ -137,54 +230,90 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
   },
-  mapBtn: {
+  headerTag: { fontFamily: font.mono, fontSize: 10, letterSpacing: 1.4, color: colors.stone },
+
+  eyebrow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    alignSelf: "flex-start",
+    gap: 7,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
     backgroundColor: colors.surface,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  dotEmber: { width: 6, height: 6, borderRadius: 999, backgroundColor: colors.ember },
-  mapBtnText: { fontFamily: font.medium, fontSize: 13, color: colors.ink },
-  eyebrow: { fontFamily: font.mono, fontSize: 11, letterSpacing: 1.6, color: colors.stone },
+  eyebrowDot: { width: 6, height: 6, borderRadius: 999, backgroundColor: colors.sage },
+  eyebrowText: { fontFamily: font.mono, fontSize: 10, letterSpacing: 1.6, color: colors.stone },
+
   h1: {
-    fontFamily: font.extrabold,
-    fontSize: 34,
-    lineHeight: 36,
+    fontFamily: font.display,
+    fontSize: 32,
+    lineHeight: 38,
     color: colors.ink,
-    letterSpacing: -1,
-    marginTop: 14,
+    letterSpacing: -0.4,
+    marginTop: 18,
   },
+  h1Italic: { fontFamily: font.displayItalic, color: colors.sage },
   sub: {
     fontFamily: font.regular,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
     color: colors.stone,
-    marginTop: 14,
-    maxWidth: 340,
-  },
-  note: { fontFamily: font.medium, fontSize: 12, color: colors.ember, marginTop: 12 },
-  listLabel: {
-    fontFamily: font.mono,
-    fontSize: 11,
-    letterSpacing: 1.6,
-    color: colors.stone,
-    marginTop: 26,
-  },
-  center: { paddingVertical: 60, alignItems: "center" },
-  empty: {
     marginTop: 16,
+  },
+
+  chips: { paddingHorizontal: 20, gap: 8 },
+  chip: {
+    minHeight: 44,
+    justifyContent: "center",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+  },
+  chipActive: { backgroundColor: colors.sage },
+  chipIdle: { borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface },
+  chipText: { fontFamily: font.semibold, fontSize: 14 },
+
+  cta: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 10,
+    backgroundColor: colors.sage,
+    borderRadius: 999,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    marginTop: 22,
+    maxWidth: "100%",
+  },
+  ctaDot: { width: 9, height: 9, borderRadius: 999, backgroundColor: colors.paper },
+  ctaText: { fontFamily: font.semibold, fontSize: 15, color: colors.paper, flexShrink: 1 },
+
+  note: { fontFamily: font.regular, fontSize: 12, color: colors.stone, marginTop: 14, maxWidth: 320 },
+
+  listHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingBottom: 12,
+    marginTop: 30,
+  },
+  listLabel: { fontFamily: font.mono, fontSize: 11, letterSpacing: 1.4, color: colors.stone },
+  mapLink: { fontFamily: font.mono, fontSize: 11, color: colors.sage },
+
+  skRow: { flexDirection: "row", alignItems: "flex-start", gap: 14, paddingVertical: 18 },
+  skBox: { backgroundColor: colors.sand, borderRadius: 6 },
+
+  empty: {
+    marginTop: 18,
     borderWidth: 1,
     borderColor: colors.line,
     borderStyle: "dashed",
-    borderRadius: 18,
+    borderRadius: radius.card,
     padding: 28,
     alignItems: "center",
   },

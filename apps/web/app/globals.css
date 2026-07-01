@@ -1,24 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  /* Palet — "Ölçülmüş dürüstlük": sıcak kağıt + mürekkep + ember/pine aksanları */
-  --color-paper: #f4f2ec;
-  --color-surface: #faf9f5;
-  --color-ink: #15140f;
-  --color-ember: #ff4a1c;
-  --color-ember-soft: #ffe7df;
-  --color-pine: #0f5c46;
-  --color-pine-soft: #dcebe2;
-  --color-sand: #e7e3d8;
-  --color-stone: #76726a;
-  --color-line: #ddd9cd;
+  /* Palet — "Ölçülmüş dürüstlük" (koyu müze): sıcak charcoal + krem + adaçayı vurgu.
+     Token İSİMLERİ korunur (paper=zemin, ink=birincil metin) → bileşenler otomatik uyar. */
+  --color-paper: #17130d; /* derin sıcak charcoal — sayfa zemini */
+  --color-surface: #211c14; /* yükseltilmiş yüzey (kart/çip) */
+  --color-ink: #ece4d3; /* birincil metin — sıcak krem */
+  --color-stone: #a99e88; /* ikincil metin — soluk taş/taupe */
+  --color-line: #38311f; /* koyu sıcak kenarlık/ayraç */
+  --color-sand: #2c261b; /* iskelet/blok koyu tonu */
+
+  /* Adaçayı/zeytin — birincil vurgu (CTA, etkileşim, "güvenilir") */
+  --color-sage: #a9b27e;
+  --color-sage-soft: #2a3220; /* koyu yeşil çip zemini */
+  --color-sage-ink: #c3cd97; /* koyu zemin üstünde açık adaçayı metin */
+
+  /* Ember/amber — sıcak odak + "az yorumlu" uyarısı (koyu zeminde parlak) */
+  --color-ember: #ff6a3d;
+  --color-ember-soft: #3a2418; /* koyu amber çip zemini */
+  --color-ember-ink: #ffb38f; /* koyu zemin üstünde açık amber metin */
+
+  /* Geriye dönük uyum (eski pine referansları için adaçayına eşlenir) */
+  --color-pine: var(--color-sage-ink);
+  --color-pine-soft: var(--color-sage-soft);
 
   --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html {
@@ -31,6 +43,17 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Dokunmada 300ms tıklama gecikmesini kaldır (§2 tap-delay) */
+  touch-action: manipulation;
+}
+
+/* Yatay kaydırmalı çip şeridi için gizli scrollbar */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* İnce kağıt dokusu — düz/AI hissini kırar */
@@ -40,7 +63,7 @@ body::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.06;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -68,9 +91,38 @@ body::before {
   animation: pulsering 2.4s ease-out infinite;
 }
 
+/* Yiyecek yağmuru — yan sütunlardan süzülen dekoratif parçalar */
+@keyframes foodfall {
+  0% { transform: translateY(-12vh) rotate(var(--r0, 0deg)); opacity: 0; }
+  8% { opacity: var(--maxop, 0.9); }
+  92% { opacity: var(--maxop, 0.9); }
+  100% { transform: translateY(112vh) rotate(var(--r1, 360deg)); opacity: 0; }
+}
+.foodfall {
+  animation: foodfall var(--dur, 14s) linear var(--delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* Hafif yatay salınım — düşüş daha doğal görünür */
+@keyframes sway {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(var(--sway, 14px)); }
+}
+.sway {
+  animation: sway var(--swaydur, 5s) ease-in-out var(--delay, 0s) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rise,
-  .pulsering {
-    animation: none;
+  .pulsering,
+  .animate-ping,
+  .animate-spin,
+  .foodfall,
+  .sway {
+    animation: none !important;
+  }
+  /* Hareket kapalıyken yağmur parçalarını gizle — statik dağınıklık olmasın */
+  .foodfall {
+    opacity: 0 !important;
   }
 }

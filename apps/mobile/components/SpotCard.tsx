@@ -48,7 +48,7 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  cardLead: { borderTopColor: "rgba(21,20,15,0.2)" },
+  cardLead: { borderTopColor: "rgba(169,178,126,0.5)" },
   rank: { fontFamily: font.monoBold, fontSize: 18, width: 34, paddingTop: 2 },
   name: { fontFamily: font.bold, fontSize: 19, color: colors.ink, letterSpacing: -0.3 },
   meta: { flexDirection: "row", alignItems: "center", marginTop: 6, flexWrap: "wrap" },

@@ -44,7 +44,16 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\);if\\(r.error\\){console.log\\('HATA:',r.message\\);return;}console.log\\('cacheHit:',r.cacheHit,'| mekan:',r.places.length\\);r.places.slice\\(0,6\\).forEach\\(\\(p,i\\)=>console.log\\(\\(i+1\\)+'.',p.name,'| RS',p.realScore,'★'+p.rating,'|',p.userRatingsTotal+' yorum'\\)\\);}\\); \")",
       "Bash(git init *)",
       "Bash(git config *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(xargs echo \"toplam commit:\")",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Read(//c/Program Files/GitHub CLI/**)",
+      "Read(//c/Program Files \\(x86\\)/GitHub CLI/**)",
+      "Read(//c/Users/User/AppData/Local/**)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create TrueBite --private --source=. --remote=origin --push)"
     ]
   }
 }

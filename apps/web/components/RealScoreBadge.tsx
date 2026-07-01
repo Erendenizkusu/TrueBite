@@ -31,7 +31,7 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
 
       <span
         className={`mt-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-          strong ? "bg-pine-soft text-pine" : "bg-ember-soft text-ember"
+          strong ? "bg-pine-soft text-pine" : "bg-ember-soft text-ember-ink"
         }`}
       >
         {strong ? "✓ güvenilir" : "az yorumlu"}

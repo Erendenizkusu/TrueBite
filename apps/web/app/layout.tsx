@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono, Fraunces } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -7,6 +7,15 @@ const hanken = Hanken_Grotesk({
   subsets: ["latin", "latin-ext"],
   variable: "--font-hanken",
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Display — zarif serif (roman + italik), müze/editöryel his (ref: PieterKoopt)
+const fraunces = Fraunces({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-fraunces",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -32,7 +41,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className={`${hanken.variable} ${mono.variable}`}>
+    <html lang="tr" className={`${hanken.variable} ${fraunces.variable} ${mono.variable}`}>
       <body className="relative">
         <Providers>{children}</Providers>
       </body>
