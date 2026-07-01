@@ -20,7 +20,10 @@
     },
     "android": {
       "package": "app.truebite",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "BURAYA_ANDROID_MAPS_SDK_ANAHTARI"
@@ -34,7 +37,8 @@
         {
           "locationWhenInUsePermission": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "extra": {
       "router": {}
