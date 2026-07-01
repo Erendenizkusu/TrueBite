@@ -17,20 +17,23 @@ export function DiscoverApp() {
   const cat = CATEGORIES[catIdx]!;
   const resultsRef = useRef<HTMLElement>(null);
 
-  const { data, isFetching } = useQuery({
-    queryKey: ["nearby", coords?.lat, coords?.lng, cat.type],
-    queryFn: async (): Promise<NearbyResult | null> => {
+  const { data, isFetching, isError, refetch } = useQuery({
+    queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
+    queryFn: async (): Promise<NearbyResult> => {
       const qs = new URLSearchParams({
         lat: String(coords!.lat),
         lng: String(coords!.lng),
-        radiusM: "2500",
-        limit: "24",
+        radiusM: "4000",
+        limit: "12",
       });
-      if (cat.type) qs.set("type", cat.type);
+      if (cat.key !== "all") qs.set("category", cat.key);
       const r = await fetch(`/api/nearby?${qs.toString()}`);
-      return r.ok ? r.json() : null;
+      // Hatayı yut­ma: fırlat ki UI "sonuç yok" yerine "sunucuya ulaşılamadı" göstersin.
+      if (!r.ok) throw new Error(`nearby ${r.status}`);
+      return r.json();
     },
     enabled: status === "ready" && !!coords,
+    retry: 1,
   });
 
   // Konum alınınca sonuçlara yumuşakça kaydır (uzamsal süreklilik)
@@ -152,7 +155,7 @@ export function DiscoverApp() {
         <section ref={resultsRef} className="relative z-10 mx-auto max-w-3xl scroll-mt-4 px-5 pb-24 sm:px-8">
           <div className="flex items-center justify-between border-b border-line py-4">
             <h2 className="font-display text-lg font-bold tracking-[-0.02em] sm:text-xl">
-              {cat.label === "Tümü" ? "En iyi mekanlar" : `En iyi ${cat.label.toLowerCase()} mekanları`}
+              {cat.key === "all" ? "En iyi mekanlar" : `En iyi ${cat.label.toLowerCase()} mekanları`}
             </h2>
             {data && (
               <span className="font-mono text-[11px] text-stone">
@@ -163,6 +166,8 @@ export function DiscoverApp() {
 
           {isFetching && places.length === 0 ? (
             <Loading />
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : places.length === 0 ? (
             <Empty />
           ) : (
@@ -206,6 +211,24 @@ function Empty() {
       <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">
         Yarıçapı genişletmeyi ya da farklı bir kategori denemeyi dene.
       </p>
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  // Sunucu/ağ hatası — "sonuç yok"tan ayrı; kullanıcıyı yanıltmaz, tekrar dene sunar.
+  return (
+    <div className="mt-6 rounded-2xl border border-dashed border-ember/40 bg-ember-soft/40 px-6 py-16 text-center">
+      <p className="font-mono text-sm text-ember-ink">şu an listeye ulaşamadık</p>
+      <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">
+        Sunucuya bağlanırken bir sorun oldu. Birkaç saniye sonra tekrar dene.
+      </p>
+      <button
+        onClick={onRetry}
+        className="mt-5 inline-flex min-h-11 items-center rounded-full bg-sage px-5 text-sm font-semibold text-paper transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+      >
+        Tekrar dene
+      </button>
     </div>
   );
 }

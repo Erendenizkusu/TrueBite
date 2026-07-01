@@ -25,6 +25,25 @@ supabase/   PostGIS şema + RealScore SQL fonksiyonları + migration'lar
 - **Tasarım dili "Ölçülmüş dürüstlük":** AI-klişesi cream+serif YOK. Konum-bağımsız, konsept-öncelikli.
   Kullanıcıya formül/iç-mekanik gösterme. Detay: hafıza [[web-homepage-direction]].
 
+## 💰 Monetizasyon & Maliyet Güvenliği (KRİTİK KURAL)
+
+> **ALTIN KURAL:** Uygulama **hiçbir zaman ay sonunda kazandığından daha fazla maliyet
+> çıkarmamalı.** Başlarda başabaş/dengeli gidebilir, ama en azından **reklamlarla** bu denge
+> sağlanmalı. Her kullanıcı isteği bir maliyet doğurur (Google Places çağrıları + ileride AI);
+> bu maliyet gelirle (reklam/token) karşılanmadan ölçeklenmemeli.
+
+Maliyet kalemleri: cache-miss başına ~5 Google Places çağrısı (2x2 tiling), ileride AI kategori-
+uyum skoru (Haiku). Cache (3 gün, hücre+kategori) maliyeti düşüren birincil kaldıraçtır.
+
+Planlanan model (kademeli):
+1. **MVP:** Kullanıcıya günde **1-2 ücretsiz istek**. Daha fazlası için **reklam izletme** (rewarded ad).
+2. **Büyüme:** Kullanıcı kazanımı başlayınca **token** mantığı — kullanıcı yeni istek için token
+   satın alır; fiyat, o isteğin **bize maliyetine göre** makul belirlenir (maliyet + marj).
+3. **Her aşamada:** Sunucuda **günlük/aylık Google API bütçe sayacı** + kullanıcı-başı **rate limit**
+   (kötüye kullanım + maliyet patlaması koruması). Bütçe aşılırsa istek reddedilir/kuyruklanır.
+
+Detay ve gerekçe: hafıza [[monetization-cost-rule]]. Release checklist (A/B/C/D): **`RELEASE.md`**.
+
 ## Geliştirme komutları
 
 ```bash

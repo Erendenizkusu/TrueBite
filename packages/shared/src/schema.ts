@@ -14,12 +14,13 @@ export const nearbyQuerySchema = z.object({
   lng: z.coerce.number().min(-180).max(180),
   radiusM: z.coerce.number().int().positive().max(50000).default(1500),
   limit: z.coerce.number().int().positive().max(100).default(50),
-  // Tür filtresi opsiyonel; boş/eksikse null.
-  type: z
+  // Kategori anahtarı (örn. "sushi"); boş/eksik/"all" → null (tür kısıtı yok).
+  // Alakalı Google türleri + eleme, API'de bu anahtardan çözülür (bkz. categories.ts).
+  category: z
     .string()
     .min(1)
     .nullish()
-    .transform((v) => v ?? null),
+    .transform((v) => (v && v !== "all" ? v : null)),
 });
 
 /** `places` tablosu / Google Places'ten normalize edilmiş mekan. */

@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { getNearby, type NearbyDeps } from "./nearby.ts";
 import type { NearbyQuery, Place } from "@truebite/shared";
 
-const q: NearbyQuery = { lat: 40.99, lng: 29.03, radiusM: 2000, limit: 50, type: null };
+const q: NearbyQuery = { lat: 40.99, lng: 29.03, radiusM: 2000, limit: 50, category: null };
 
 function makeDeps(overrides: Partial<NearbyDeps> = {}) {
   const calls = { fetch: 0, upsert: 0, touch: 0, query: 0 };

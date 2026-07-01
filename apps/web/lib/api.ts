@@ -7,7 +7,7 @@ export interface NearbyParams {
   lng: number;
   radiusM?: number;
   limit?: number;
-  type?: string | null;
+  category?: string | null;
 }
 
 /** Backend'in /places/nearby endpoint'ini tüketir. Hata/boş durumda null döner
@@ -19,7 +19,7 @@ export async function getNearby(p: NearbyParams): Promise<NearbyResult | null> {
     radiusM: String(p.radiusM ?? 2000),
     limit: String(p.limit ?? 30),
   });
-  if (p.type) qs.set("type", p.type);
+  if (p.category) qs.set("category", p.category);
 
   try {
     const res = await fetch(`${API_BASE}/places/nearby?${qs.toString()}`, {

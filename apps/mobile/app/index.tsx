@@ -33,8 +33,8 @@ export default function Discover() {
   const cat = CATEGORIES[catIdx]!;
 
   const { data, isFetching } = useQuery({
-    queryKey: ["nearby", coords?.lat, coords?.lng, cat.type],
-    queryFn: () => fetchNearby(coords!.lat, coords!.lng, 2500, cat.type),
+    queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
+    queryFn: () => fetchNearby(coords!.lat, coords!.lng, 4000, cat.key),
     enabled: status === "ready" && !!coords,
   });
   const places = data?.places ?? [];
@@ -181,7 +181,7 @@ function Hero({
       {resultCount != null && (
         <View style={s.listHead}>
           <Text style={s.listLabel}>
-            {cat.label === "Tümü" ? "EN İYİ MEKANLAR" : `EN İYİ ${cat.label.toUpperCase()} MEKANLARI`}
+            {cat.key === "all" ? "EN İYİ MEKANLAR" : `EN İYİ ${cat.label.toUpperCase()} MEKANLARI`}
           </Text>
           <Pressable onPress={onMap} hitSlop={8}>
             <Text style={s.mapLink}>

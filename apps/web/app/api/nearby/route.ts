@@ -15,7 +15,12 @@ export async function GET(req: NextRequest) {
     lng,
     radiusM: Number(sp.get("radiusM")) || 2000,
     limit: Number(sp.get("limit")) || 30,
-    type: sp.get("type"),
+    category: sp.get("category"),
   });
+  // getNearby, backend ulaşılamaz/hata olduğunda null döner. Bunu 200+null olarak geçirmek
+  // istemcide "sonuç yok" ile karışıyordu → upstream hatasını 502 ile ayır.
+  if (!result) {
+    return NextResponse.json({ error: "upstream_unavailable" }, { status: 502 });
+  }
   return NextResponse.json(result);
 }

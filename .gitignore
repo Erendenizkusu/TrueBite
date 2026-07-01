@@ -28,3 +28,6 @@ supabase/.temp/
 .claude/skills/design/
 .claude/skills/banner-design/
 .claude/skills/slides/
+
+# TypeScript incremental build cache
+*.tsbuildinfo

@@ -12,15 +12,15 @@ export async function fetchNearby(
   lat: number,
   lng: number,
   radiusM = 2000,
-  type?: string | null,
+  category?: string | null,
 ): Promise<NearbyResult | null> {
   const qs = new URLSearchParams({
     lat: String(lat),
     lng: String(lng),
     radiusM: String(radiusM),
-    limit: "30",
+    limit: "12",
   });
-  if (type) qs.set("type", type);
+  if (category && category !== "all") qs.set("category", category);
   try {
     const res = await fetch(`${BASE}/places/nearby?${qs.toString()}`);
     if (!res.ok) return null;

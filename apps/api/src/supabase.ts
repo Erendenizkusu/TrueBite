@@ -1,4 +1,10 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import {
+  categoryByKey,
+  EXCLUDED_PRIMARY_TYPES,
+  EXCLUDED_TYPES,
+  SPECIFIC_PRIMARY_TYPES,
+} from "@truebite/shared";
 import type { NearbyQuery, Place, ScoredPlace, HighlightTag } from "@truebite/shared";
 
 export function createSupabase(url: string, serviceKey: string): SupabaseClient {
@@ -21,12 +27,22 @@ export async function isCellFresh(
 
 /** Çekirdek: yarıçap + RealScore sıralaması (nearby_places SQL fonksiyonu). */
 export async function queryNearby(sb: SupabaseClient, q: NearbyQuery): Promise<ScoredPlace[]> {
+  const cat = categoryByKey(q.category);
   const { data, error } = await sb.rpc("nearby_places", {
     p_lat: q.lat,
     p_lng: q.lng,
     p_radius_m: q.radiusM,
     p_limit: q.limit,
-    p_type: q.type,
+    // Kategori "Tümü" ise tür kısıtı yok (null); aksi halde alakalı türlerle kesişim.
+    p_types: cat.relevantTypes,
+    // Bar/sahne/etkinlik mekânlarını daima ele (primaryType bazlı).
+    p_excluded_primaries: EXCLUDED_PRIMARY_TYPES,
+    // Güçlü gece-hayatı sinyali (types bazlı) → primary restaurant olsa bile ele.
+    p_excluded_types: EXCLUDED_TYPES,
+    // Cross-kategori kapısı: primary başka bir spesifik işletme türüyse ele (kafe→sushi).
+    p_specific_primaries: SPECIFIC_PRIMARY_TYPES,
+    // Kahve/tatlı: primary doğrudan kategori türü olmalı (generic restoran kabul edilmez).
+    p_strict_primary: cat.strictPrimary === true,
   });
   if (error) throw new Error(`nearby_places: ${error.message}`);
   return (data ?? []).map(

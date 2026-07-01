@@ -42,8 +42,9 @@ const SIDE_PIECES: Piece[] = [
   { e: "🍰", side: "r", pos: 2, size: 34, dur: 18.5, delay: -15, rot: 280, op: 0.66, sway: 15, swaydur: 6.3 },
 ];
 
-// Mobil — tüm genişliğe yayılır (sadece <sm görünür), metnin arkasından yağar
-const SPREAD_PIECES: (Omit<Piece, "side"> & { left: number })[] = [
+// Mobil — tüm genişliğe yayılır (sadece <sm görünür), metnin arkasından yağar.
+// pos yerine left kullanır → "side" ve "pos" alanlarını omit et.
+const SPREAD_PIECES: (Omit<Piece, "side" | "pos"> & { left: number })[] = [
   { e: "🍔", left: 10, size: 34, dur: 15, delay: -2, rot: -280, op: 0.5, sway: 14, swaydur: 5 },
   { e: "🍕", left: 26, size: 30, dur: 18, delay: -8, rot: 300, op: 0.42, sway: 12, swaydur: 6 },
   { e: "☕", left: 42, size: 28, dur: 21, delay: -13, rot: 220, op: 0.38, sway: 10, swaydur: 7 },

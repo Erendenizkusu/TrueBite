@@ -31,9 +31,9 @@ export interface NearbyDeps {
 export async function getNearby(q: NearbyQuery, deps: NearbyDeps): Promise<NearbyResult> {
   const cellId = toCellId(q.lat, q.lng, deps.cellPrecision);
   const bucket = radiusBucket(q.radiusM);
-  // Tür filtresi önbellek kimliğine katılır → her kategori kendi tazeliğine sahip
+  // Kategori önbellek kimliğine katılır → her kategori kendi tazeliğine sahip
   // (örn. "kahve" araması, daha önce "tümü" cache'lense bile Google'a taze gider).
-  const freshnessKey = q.type ? `${cellId}:${q.type}` : cellId;
+  const freshnessKey = q.category ? `${cellId}:${q.category}` : cellId;
 
   let cacheHit = true;
   if (!(await deps.isCellFresh(freshnessKey, bucket))) {

@@ -1,5 +1,14 @@
 export { encodeGeohash, cellId, radiusBucket } from "./geohash.ts";
 export {
+  CATEGORIES,
+  DEFAULT_FOOD_TYPES,
+  EXCLUDED_PRIMARY_TYPES,
+  EXCLUDED_TYPES,
+  SPECIFIC_PRIMARY_TYPES,
+  categoryByKey,
+} from "./categories.ts";
+export type { Category } from "./categories.ts";
+export {
   nearbyQuerySchema,
   placeSchema,
   scoredPlaceSchema,

@@ -19,13 +19,18 @@ test("nearbyQuery — HTTP string girdilerini coerce eder ve varsayılanları uy
   assert.equal(q.lng, 29.03);
   assert.equal(q.radiusM, 1500); // varsayılan
   assert.equal(q.limit, 50); // varsayılan
-  assert.equal(q.type, null); // eksik → null
+  assert.equal(q.category, null); // eksik → null
 });
 
-test("nearbyQuery — verilen tür ve yarıçap korunur", () => {
-  const q = nearbyQuerySchema.parse({ lat: 40.99, lng: 29.03, radiusM: "2000", type: "cafe" });
+test("nearbyQuery — verilen kategori ve yarıçap korunur", () => {
+  const q = nearbyQuerySchema.parse({ lat: 40.99, lng: 29.03, radiusM: "2000", category: "sushi" });
   assert.equal(q.radiusM, 2000);
-  assert.equal(q.type, "cafe");
+  assert.equal(q.category, "sushi");
+});
+
+test("nearbyQuery — 'all' kategorisi null'a normalize edilir", () => {
+  const q = nearbyQuerySchema.parse({ lat: 40.99, lng: 29.03, category: "all" });
+  assert.equal(q.category, null);
 });
 
 test("nearbyQuery — aralık dışı koordinat reddedilir", () => {
