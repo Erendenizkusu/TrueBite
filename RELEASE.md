@@ -27,9 +27,11 @@
 ## 🔴 B — Dağıtım (VERCEL-ONLY topoloji — runbook: DEPLOY.md)
 - [x] **Backend konsolidasyonu**: mantık `packages/core`'a çıkarıldı; web `/api/*` route'ları
       backend'i çalıştırır (ayrı API host'u GEREKMEZ). Prod build geçti, yollar tekil (/api/*).
-- [ ] **Supabase cloud**: proje oluştur (EU) → `supabase link` + `supabase db push` (tüm migration'lar).
-- [ ] **Vercel deploy**: GitHub import, Root=apps/web, env değişkenleri (DEPLOY.md tablosu).
-- [ ] **Mobil**: `EXPO_PUBLIC_API_BASE_URL` → Vercel URL; **Maps SDK key** → app.json; EAS build.
+- [x] **Supabase cloud**: proje `qiefpychbmgqgyrujfwp` (EU/Frankfurt), 11 migration `db push` ile uygulandı.
+- [x] **Vercel deploy CANLI**: https://true-bite-web.vercel.app — web + `/api/*` çalışıyor
+      (kota/bütçe/RealScore canlı doğrulandı; cache-miss ~4.5s, cache-hit ~1.3s). Deployment Protection kapalı.
+- [x] **Mobil prod bağlantısı**: `apps/mobile/.env` → `EXPO_PUBLIC_API_BASE_URL=https://true-bite-web.vercel.app`.
+- [ ] **Mobil build**: **Maps SDK key** → app.json; `eas.json` preview profili; `eas build -p android`.
 - [ ] **APK/Store**: EAS `preview` profili (paylaşılabilir APK) → sonra App Store / Play Store.
 
 ## 🟡 C — Yasal / Uyumluluk (EU/Rotterdam)
