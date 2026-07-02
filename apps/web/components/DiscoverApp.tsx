@@ -15,6 +15,8 @@ export function DiscoverApp() {
   const [catIdx, setCatIdx] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [status, setStatus] = useState<Status>("idle");
+  // Konum hatasının türü — mesajı doğru göstermek için (izin reddi ≠ zaman aşımı/sinyal).
+  const [geoErr, setGeoErr] = useState<"permission" | "unavailable" | null>(null);
   const cat = CATEGORIES[catIdx]!;
   const resultsRef = useRef<HTMLElement>(null);
   // Maliyet güvenliği kotası (RELEASE.md § A) — sunucudan header ile gelir.
@@ -76,17 +78,25 @@ export function DiscoverApp() {
 
   function locateAndSearch() {
     if (!navigator.geolocation) {
+      setGeoErr("unavailable");
       setStatus("denied");
       return;
     }
+    setGeoErr(null);
     setStatus("locating");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setStatus("ready");
       },
-      () => setStatus("denied"),
-      { enableHighAccuracy: true, timeout: 9000 },
+      (err) => {
+        // code 1 = izin reddi; 2/3 = konum yok / zaman aşımı → mesajı buna göre ayır.
+        setGeoErr(err.code === 1 ? "permission" : "unavailable");
+        setStatus("denied");
+      },
+      // Mobilde daha güvenilir: yüksek-hassasiyet KAPALI (GPS beklemez, ağ konumu yeter;
+      // zaten 4km yarıçapta arıyoruz), geniş timeout, yakın-zamanlı konum kabul.
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 },
     );
   }
 
@@ -169,7 +179,9 @@ export function DiscoverApp() {
 
               <p className="mx-auto mt-4 max-w-sm text-xs text-stone">
                 {status === "denied"
-                  ? "Konuma ulaşamadık — tarayıcı konum iznini açıp tekrar dene."
+                  ? geoErr === "permission"
+                    ? "Konum izni verilmemiş — adres çubuğundaki site ayarlarından konuma izin verip tekrar dene."
+                    : "Konumuna ulaşılamadı (sinyal zayıf olabilir ya da zaman aşımı). Tekrar dene."
                   : "Tek dokunuş. Konumundaki en iyileri RealScore'a göre sıralayalım — şişirilmiş puanlar elenir."}
               </p>
             </div>
