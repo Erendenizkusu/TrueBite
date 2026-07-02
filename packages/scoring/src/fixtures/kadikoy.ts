@@ -5,7 +5,11 @@
  * (supabase/seed.sql + nearby_places) kullanır. Beklenen RealScore değerleri, iki
  * implementasyonun da üretmesi gereken SÖZLEŞMEdir. Değerler değişirse drift var demektir.
  *
- * Bölge istatistiği: C ≈ 4.27, m ≈ 1381.7 (10 mekanın tamamı puanlı).
+ * Bölge istatistiği (yorum-ağırlıklı C): C ≈ 4.227, m ≈ 1381.7 (10 mekanın tamamı puanlı).
+ * Beklenen skorlar FinalScore = Bayesyen + güven terimi (β=0.25), [0,5] clamp.
+ * NOT: bu demo veride yorum sayıları abartılı yüksek (4500, 3200…) olduğundan güven teriminin
+ * ince-örnekli mekânlara verdiği − ceza büyük görünür (kadıköy sentetik); gerçek şehir verisinde
+ * (m~300) ceza ılımlıdır. Fixture'ın amacı TS↔SQL PARİTESİ, gerçekçi büyüklük değil.
  */
 
 import type { PlaceRating } from "../realScore.ts";
@@ -28,30 +32,30 @@ export const KADIKOY_PLACES: DemoPlace[] = [
   { id: "demo_sonuk", name: "Sönük Mekan", rating: 3.2, userRatingsTotal: 150 },
 ];
 
-/** Beklenen RealScore (3 ondalık) — SQL ile eşleşmeli. */
+/** Beklenen FinalScore (3 ondalık) — SQL ile eşleşmeli. */
 export const KADIKOY_EXPECTED: Record<string, number> = {
-  demo_koklu: 4.522,
-  demo_kahveci: 4.445,
-  demo_pahali: 4.34,
-  demo_pide: 4.338,
-  demo_yeni: 4.275,
-  demo_sisirilmis: 4.273,
-  demo_sonuk: 4.165,
-  demo_turist: 4.151,
-  demo_esnaf: 4.134,
-  demo_zincir: 3.745,
+  demo_koklu: 4.641,
+  demo_kahveci: 4.379,
+  demo_pide: 4.326,
+  demo_turist: 4.23,
+  demo_pahali: 4.219,
+  demo_esnaf: 4.048,
+  demo_sonuk: 3.886,
+  demo_zincir: 3.774,
+  demo_yeni: 3.726,
+  demo_sisirilmis: 3.639,
 };
 
-/** Beklenen sıralama (RealScore azalan). */
+/** Beklenen sıralama (FinalScore azalan). */
 export const KADIKOY_EXPECTED_ORDER: string[] = [
   "demo_koklu",
   "demo_kahveci",
-  "demo_pahali",
   "demo_pide",
+  "demo_turist",
+  "demo_pahali",
+  "demo_esnaf",
+  "demo_sonuk",
+  "demo_zincir",
   "demo_yeni",
   "demo_sisirilmis",
-  "demo_sonuk",
-  "demo_turist",
-  "demo_esnaf",
-  "demo_zincir",
 ];

@@ -59,7 +59,7 @@ export function buildServer(config: AppConfig) {
     },
     upsertPlaces: (places) => upsertPlaces(sb, places),
     touchCell: (cellId, bucket, count) => touchCell(sb, cellId, bucket, count),
-    queryNearby: (q) => queryNearby(sb, q),
+    queryNearby: (q) => queryNearby(sb, q, config.TRUST_WEIGHT),
     // Maliyet güvenliği: cache-miss'te global günlük/aylık bütçe tavanını dener.
     tryConsumeBudget: async (calls) =>
       (await tryConsumeBudget(sb, calls, config.DAILY_GOOGLE_BUDGET, config.MONTHLY_GOOGLE_BUDGET))

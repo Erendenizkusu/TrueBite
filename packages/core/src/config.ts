@@ -11,6 +11,10 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8787),
   // geohash hücre çözünürlüğü (önbellek anahtarı). 6 ≈ 1.2km hücre.
   CELL_PRECISION: z.coerce.number().int().min(1).max(12).default(6),
+  // Kanıtlanmışlık/güven terimi ağırlığı (β): FinalScore += β·(log10(1+v)−log10(1+m)).
+  // Bölge-altı puanlı ama çok-yorumlu (kanıtlanmış) markaları öne çıkarır. 0 = kapalı.
+  // Kalibrasyon kolu — gerçek-veri geri bildirimiyle ayarlanır (bkz. bayesian-realscore-formula).
+  TRUST_WEIGHT: z.coerce.number().min(0).max(2).default(0.25),
 
   // ─── Maliyet güvenliği (RELEASE.md § A / altın kural) ───
   // Kullanıcı(cihaz) başına GÜNLÜK ücretsiz istek. Bitince reklam izle → +istek.

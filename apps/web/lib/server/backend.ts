@@ -59,7 +59,7 @@ function ctx(): Ctx {
     },
     upsertPlaces: (places) => upsertPlaces(sb, places),
     touchCell: (cellId, bucket, count) => touchCell(sb, cellId, bucket, count),
-    queryNearby: (q) => queryNearby(sb, q),
+    queryNearby: (q) => queryNearby(sb, q, config.TRUST_WEIGHT),
     tryConsumeBudget: async (calls) =>
       (await tryConsumeBudget(sb, calls, config.DAILY_GOOGLE_BUDGET, config.MONTHLY_GOOGLE_BUDGET))
         .allowed,

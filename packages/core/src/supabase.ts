@@ -25,8 +25,15 @@ export async function isCellFresh(
   return data === true;
 }
 
-/** Çekirdek: yarıçap + RealScore sıralaması (nearby_places SQL fonksiyonu). */
-export async function queryNearby(sb: SupabaseClient, q: NearbyQuery): Promise<ScoredPlace[]> {
+/**
+ * Çekirdek: yarıçap + RealScore sıralaması (nearby_places SQL fonksiyonu).
+ * @param trustWeight β — kanıtlanmışlık/güven terimi ağırlığı (config.TRUST_WEIGHT).
+ */
+export async function queryNearby(
+  sb: SupabaseClient,
+  q: NearbyQuery,
+  trustWeight = 0.25,
+): Promise<ScoredPlace[]> {
   const cat = categoryByKey(q.category);
   const { data, error } = await sb.rpc("nearby_places", {
     p_lat: q.lat,
@@ -43,6 +50,11 @@ export async function queryNearby(sb: SupabaseClient, q: NearbyQuery): Promise<S
     p_specific_primaries: SPECIFIC_PRIMARY_TYPES,
     // Kahve/tatlı: primary doğrudan kategori türü olmalı (generic restoran kabul edilmez).
     p_strict_primary: cat.strictPrimary === true,
+    // Ad-bazlı filtre (çiğ köfte ↔ döner ayrımı; Google'da ayrı tür yok → ad regex'i).
+    p_name_include: cat.nameInclude ?? null,
+    p_name_exclude: cat.nameExclude ?? null,
+    // Kanıtlanmışlık/güven terimi ağırlığı (β).
+    p_trust_weight: trustWeight,
   });
   if (error) throw new Error(`nearby_places: ${error.message}`);
   return (data ?? []).map(

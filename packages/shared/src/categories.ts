@@ -34,12 +34,32 @@ export interface Category {
    * primaryType'lı gerçek mekânlar (Ono → primary "restaurant") da kabul edilir.
    */
   strictPrimary?: boolean;
+  /**
+   * AD-bazlı dahil etme (regex). Google taksonomisinde ayrı türü OLMAYAN alt-mutfaklar için
+   * (çiğ köfte gibi — dönerle aynı `turkish_restaurant` türünde). Verilirse yalnızca adı bu
+   * regex'e uyan mekânlar kategoriye girer. Postgres `~*` (case-insensitive) ile uygulanır.
+   */
+  nameInclude?: string;
+  /**
+   * AD-bazlı hariç tutma (regex). Adı bu regex'e uyan mekânlar kategoriden ELENİR.
+   * Örn. döner: çiğ köftecileri (aynı türde) dışarıda tutmak için.
+   */
+  nameExclude?: string;
 }
+
+/**
+ * Çiğ köfte adı deseni (case-insensitive, diakritik + ASCII varyantları).
+ * Kapsar: "çiğ köfte", "çiğköfte", "çig kofte", "cig kofte", "çiğköfteci"…
+ * Google Places'te çiğ köftecilerin ayrı bir türü yok (döner gibi `turkish_restaurant`);
+ * döner ile çiğ köfteyi AYIRAN tek güvenilir sinyal mekân ADI'dır.
+ */
+export const CIGKOFTE_NAME_PATTERN = "ç?i[ğg]\\s*k[öo]fte";
 
 export const CATEGORIES: Category[] = [
   { key: "all", label: "Tümü", ctaNoun: "mekanları", relevantTypes: null },
   { key: "coffee", label: "Kahve", ctaNoun: "kahvecileri", relevantTypes: ["coffee_shop", "cafe"], strictPrimary: true },
-  { key: "doner", label: "Döner", ctaNoun: "dönercileri", relevantTypes: ["turkish_restaurant"] },
+  { key: "doner", label: "Döner", ctaNoun: "dönercileri", relevantTypes: ["turkish_restaurant"], nameExclude: CIGKOFTE_NAME_PATTERN },
+  { key: "cigkofte", label: "Çiğ Köfte", ctaNoun: "çiğ köftecileri", relevantTypes: ["turkish_restaurant"], nameInclude: CIGKOFTE_NAME_PATTERN },
   { key: "pizza", label: "Pizza", ctaNoun: "pizzacıları", relevantTypes: ["pizza_restaurant"] },
   { key: "sushi", label: "Sushi", ctaNoun: "suşi restoranlarını", relevantTypes: ["sushi_restaurant"] },
   { key: "burger", label: "Burger", ctaNoun: "burgercileri", relevantTypes: ["hamburger_restaurant"] },

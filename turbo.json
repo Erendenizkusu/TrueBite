@@ -13,7 +13,8 @@
         "AD_GRANT_REQUESTS",
         "DAILY_GOOGLE_BUDGET",
         "MONTHLY_GOOGLE_BUDGET",
-        "CELL_PRECISION"
+        "CELL_PRECISION",
+        "TRUST_WEIGHT"
       ]
     },
     "test": {
