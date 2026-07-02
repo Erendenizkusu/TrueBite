@@ -1,16 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { grantQuota } from "@/lib/api";
+import { grant } from "@/lib/server/backend";
 
-/** Reklam izleme → +istek hakkı proxy'si (backend /quota/grant). Cihaz kimliğini iletir.
- *  ⚠️ STUB: gerçek reklam doğrulaması gelene kadar geçici (bkz. RELEASE.md § A). */
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function clientIdOf(req: NextRequest): string | null {
+  const cid = req.headers.get("x-client-id");
+  if (cid && cid.trim()) return cid.trim();
+  const fwd = req.headers.get("x-forwarded-for");
+  return fwd?.split(",")[0]?.trim() || null;
+}
+
+/** Reklam izleme → +istek hakkı (backend /quota/grant çekirdeği).
+ *  ⚠️ STUB: gerçek reklam doğrulaması (AdMob SSV / web display) gelene kadar geçici. */
 export async function POST(req: NextRequest) {
-  const clientId = req.headers.get("x-client-id");
+  const clientId = clientIdOf(req);
   if (!clientId) {
     return NextResponse.json({ error: "client_id_required" }, { status: 400 });
   }
-  const ok = await grantQuota(clientId);
-  if (!ok) {
-    return NextResponse.json({ error: "grant_failed" }, { status: 502 });
+  try {
+    const g = await grant(clientId);
+    return NextResponse.json({ granted: g.granted, grants: g.grants });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "upstream_error", message: (err as Error).message },
+      { status: 502 },
+    );
   }
-  return NextResponse.json({ granted: true });
 }

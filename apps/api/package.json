@@ -8,15 +8,12 @@
   "scripts": {
     "dev": "node --watch --env-file=.env src/server.ts",
     "start": "node --env-file=.env src/server.ts",
-    "test": "node --test \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.107.0",
+    "@truebite/core": "*",
     "@truebite/shared": "*",
-    "@supabase/supabase-js": "^2.45.0",
-    "fastify": "^5.0.0",
-    "zod": "^3.23.8"
+    "fastify": "^5.0.0"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

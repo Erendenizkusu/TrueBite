@@ -44,7 +44,7 @@ export async function fetchNearby(
   });
   if (category && category !== "all") qs.set("category", category);
   try {
-    const res = await fetch(`${BASE}/places/nearby?${qs.toString()}`, {
+    const res = await fetch(`${BASE}/api/nearby?${qs.toString()}`, {
       headers: { "X-Client-Id": getClientId() },
     });
     const quota: Quota = {
@@ -65,7 +65,7 @@ export async function fetchNearby(
  */
 export async function grantQuota(): Promise<boolean> {
   try {
-    const res = await fetch(`${BASE}/quota/grant`, {
+    const res = await fetch(`${BASE}/api/quota/grant`, {
       method: "POST",
       headers: { "X-Client-Id": getClientId(), "Content-Type": "application/json" },
       body: "{}",

@@ -1,7 +1,8 @@
 import Fastify from "fastify";
 import { nearbyQuerySchema } from "@truebite/shared";
-import { loadConfig, type AppConfig } from "./config.ts";
 import {
+  loadConfig,
+  type AppConfig,
   createSupabase,
   isCellFresh,
   queryNearby,
@@ -9,12 +10,19 @@ import {
   touchCell,
   freshHighlights,
   upsertHighlights,
-} from "./supabase.ts";
-import { fetchNearbyFromGoogle, fetchPlaceReviews, GOOGLE_CALLS_PER_FETCH } from "./google.ts";
-import { getNearby, type NearbyDeps } from "./nearby.ts";
-import { extractHighlights, HIGHLIGHTS_MODEL } from "./ai.ts";
-import { getHighlights, type HighlightsDeps } from "./highlights.ts";
-import { consumeUserRequest, grantAdRequest, tryConsumeBudget } from "./usage.ts";
+  fetchNearbyFromGoogle,
+  fetchPlaceReviews,
+  GOOGLE_CALLS_PER_FETCH,
+  getNearby,
+  type NearbyDeps,
+  extractHighlights,
+  HIGHLIGHTS_MODEL,
+  getHighlights,
+  type HighlightsDeps,
+  consumeUserRequest,
+  grantAdRequest,
+  tryConsumeBudget,
+} from "@truebite/core";
 
 /** Kullanıcı(cihaz) kimliği: istemci device-id başlığı → yoksa IP (anonim kota/rate-limit temeli). */
 function clientIdOf(req: { headers: Record<string, unknown>; ip: string }): string {
@@ -74,7 +82,9 @@ export function buildServer(config: AppConfig) {
 
   app.get("/health", async () => ({ ok: true }));
 
-  app.get("/places/nearby", async (req, reply) => {
+  // NOT: Yollar Vercel (apps/web) route'larıyla BİREBİR AYNI (/api/*) — mobil/istemci yalnızca
+  // BASE URL değiştirir (yerel Fastify ↔ Vercel), yol şeması tektir.
+  app.get("/api/nearby", async (req, reply) => {
     const parsed = nearbyQuerySchema.safeParse(req.query);
     if (!parsed.success) {
       return reply.status(400).send({ error: "invalid_query", details: parsed.error.flatten() });
@@ -108,7 +118,7 @@ export function buildServer(config: AppConfig) {
   // Rewarded ad tamamlandığında istemci bunu çağırır → +istek hakkı.
   // ⚠️ ÜRETİM: AdMob sunucu-taraflı doğrulama (SSV) ile KORUNMALI — aksi halde herkes
   // curl ile bedava kota üretir. Şu an MVP/yerel için açık stub (bkz. RELEASE.md § A).
-  app.post("/quota/grant", async (req, reply) => {
+  app.post("/api/quota/grant", async (req, reply) => {
     const clientId = clientIdOf(req);
     try {
       const g = await grantAdRequest(sb, clientId, config.AD_GRANT_REQUESTS);
@@ -119,7 +129,7 @@ export function buildServer(config: AppConfig) {
     }
   });
 
-  app.get("/places/:placeId/highlights", async (req, reply) => {
+  app.get("/api/places/:placeId/highlights", async (req, reply) => {
     const { placeId } = req.params as { placeId: string };
     if (!placeId) {
       return reply.status(400).send({ error: "place_id gerekli" });
