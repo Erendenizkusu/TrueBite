@@ -12,7 +12,7 @@ import * as Location from "expo-location";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { ScoredPlace } from "@truebite/shared";
-import { fetchNearby } from "@/lib/api";
+import { fetchNearby, grantQuota } from "@/lib/api";
 import { colors, font, radius } from "@/lib/theme";
 import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
@@ -32,12 +32,27 @@ export default function Discover() {
   const [status, setStatus] = useState<Status>("idle");
   const cat = CATEGORIES[catIdx]!;
 
-  const { data, isFetching } = useQuery({
+  const [granting, setGranting] = useState(false);
+  const { data, isFetching, refetch } = useQuery({
     queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
     queryFn: () => fetchNearby(coords!.lat, coords!.lng, 4000, cat.key),
     enabled: status === "ready" && !!coords,
   });
-  const places = data?.places ?? [];
+  // Ayrıştırılmış dönüş: ok / kota-doldu / hata.
+  const result = data?.kind === "ok" ? data.result : null;
+  const places = result?.places ?? [];
+  const quotaExceeded = data?.kind === "quota";
+  const remaining = data && data.kind !== "error" ? data.quota.remaining : null;
+
+  // "Reklam izle → +1 keşif" (STUB: gerçek AdMob rewarded ad'e kadar geçici).
+  async function watchAdForMore() {
+    setGranting(true);
+    try {
+      if (await grantQuota()) await refetch();
+    } finally {
+      setGranting(false);
+    }
+  }
 
   async function locateAndSearch() {
     setStatus("locating");
@@ -67,7 +82,7 @@ export default function Discover() {
       </View>
 
       <FlatList
-        data={ready ? places : []}
+        data={ready && !quotaExceeded ? places : []}
         keyExtractor={(p: ScoredPlace) => p.placeId}
         renderItem={({ item, index }) => <SpotCard place={item} rank={index + 1} />}
         ListHeaderComponent={
@@ -77,15 +92,18 @@ export default function Discover() {
             onCat={setCatIdx}
             status={status}
             onLocate={locateAndSearch}
-            resultCount={ready ? places.length : null}
-            cacheHit={data?.cacheHit}
+            resultCount={ready && !quotaExceeded ? places.length : null}
+            remaining={remaining}
+            cacheHit={result?.cacheHit}
             onMap={() =>
               coords && router.push(`/map?lat=${coords.lat}&lng=${coords.lng}`)
             }
           />
         }
         ListEmptyComponent={
-          status === "locating" || (ready && isFetching) ? (
+          quotaExceeded ? (
+            <LimitReached onWatchAd={watchAdForMore} granting={granting} />
+          ) : status === "locating" || (ready && isFetching) ? (
             <Skeleton />
           ) : ready ? (
             <Empty />
@@ -105,6 +123,7 @@ function Hero({
   status,
   onLocate,
   resultCount,
+  remaining,
   cacheHit,
   onMap,
 }: {
@@ -114,6 +133,7 @@ function Hero({
   status: Status;
   onLocate: () => void;
   resultCount: number | null;
+  remaining: number | null;
   cacheHit?: boolean;
   onMap: () => void;
 }) {
@@ -185,7 +205,13 @@ function Hero({
           </Text>
           <Pressable onPress={onMap} hitSlop={8}>
             <Text style={s.mapLink}>
-              {cacheHit == null ? "" : cacheHit ? "● anlık · harita" : "● güncel · harita"}
+              {remaining != null
+                ? `${remaining} keşif kaldı · harita`
+                : cacheHit == null
+                  ? ""
+                  : cacheHit
+                    ? "● anlık · harita"
+                    : "● güncel · harita"}
             </Text>
           </Pressable>
         </View>
@@ -219,6 +245,29 @@ function Empty() {
     <View style={s.empty}>
       <Text style={s.emptyTitle}>bu kategoride yakınında mekan bulunamadı</Text>
       <Text style={s.emptyText}>Farklı bir kategori ya da daha geniş bir alan dene.</Text>
+    </View>
+  );
+}
+
+function LimitReached({ onWatchAd, granting }: { onWatchAd: () => void; granting: boolean }) {
+  // Kota doldu — maliyet güvenliği (altın kural). Reklamla ödüllendir ya da yarını beklet.
+  return (
+    <View style={s.limit}>
+      <Text style={s.limitTitle}>Bugünlük ücretsiz keşif hakkın doldu</Text>
+      <Text style={s.limitText}>
+        Kaliteli mekan verisi bize maliyet doğurur; adil kullanım için günlük bir sınır var.
+        Kısa bir reklam izleyerek bir keşif daha açabilir ya da yarın devam edebilirsin.
+      </Text>
+      <Pressable
+        onPress={onWatchAd}
+        disabled={granting}
+        style={({ pressed }) => [s.limitCta, (pressed || granting) && { opacity: 0.75 }]}
+      >
+        <Text style={s.limitCtaText}>
+          {granting ? "hazırlanıyor…" : "Reklam izle → 1 keşif daha"}
+        </Text>
+      </Pressable>
+      <Text style={s.limitNote}>Kota her gün sıfırlanır.</Text>
     </View>
   );
 }
@@ -326,4 +375,39 @@ const s = StyleSheet.create({
     marginTop: 8,
     maxWidth: 260,
   },
+
+  limit: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: colors.sage,
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    padding: 28,
+    alignItems: "center",
+  },
+  limitTitle: {
+    fontFamily: font.display,
+    fontSize: 19,
+    color: colors.ink,
+    textAlign: "center",
+    letterSpacing: -0.3,
+  },
+  limitText: {
+    fontFamily: font.regular,
+    fontSize: 13,
+    lineHeight: 20,
+    color: colors.stone,
+    textAlign: "center",
+    marginTop: 10,
+    maxWidth: 300,
+  },
+  limitCta: {
+    backgroundColor: colors.sage,
+    borderRadius: 999,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    marginTop: 18,
+  },
+  limitCtaText: { fontFamily: font.semibold, fontSize: 14, color: colors.paper },
+  limitNote: { fontFamily: font.mono, fontSize: 11, color: colors.stone, marginTop: 12 },
 });

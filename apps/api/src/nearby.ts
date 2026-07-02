@@ -18,6 +18,11 @@ export interface NearbyDeps {
   upsertPlaces: (places: Place[]) => Promise<number>;
   touchCell: (cellId: string, bucket: number, count: number) => Promise<void>;
   queryNearby: (q: NearbyQuery) => Promise<ScoredPlace[]>;
+  // Maliyet güvenliği: cache-miss'te Google'a GİTMEDEN önce global bütçe tavanını dener.
+  // false → tavan doldu, Google çağrısı yapılmaz, bayat/DB verisi servis edilir.
+  tryConsumeBudget: (calls: number) => Promise<boolean>;
+  // Bir cache-miss'in yapacağı gerçek Google çağrı sayısı (bütçeden düşülecek miktar).
+  googleCallsPerFetch: number;
 }
 
 /**
@@ -36,13 +41,20 @@ export async function getNearby(q: NearbyQuery, deps: NearbyDeps): Promise<Nearb
   const freshnessKey = q.category ? `${cellId}:${q.category}` : cellId;
 
   let cacheHit = true;
+  let budgetExceeded = false;
   if (!(await deps.isCellFresh(freshnessKey, bucket))) {
     cacheHit = false;
-    const fetched = await deps.fetchFromGoogle(q);
-    await deps.upsertPlaces(fetched);
-    await deps.touchCell(freshnessKey, bucket, fetched.length);
+    // Maliyet güvenliği: global bütçe tavanı dolmadıysa taze çek; dolduysa Google'a
+    // GİTME — elde ne varsa (bayat/kısmi DB verisi) servis et (altın kural).
+    if (await deps.tryConsumeBudget(deps.googleCallsPerFetch)) {
+      const fetched = await deps.fetchFromGoogle(q);
+      await deps.upsertPlaces(fetched);
+      await deps.touchCell(freshnessKey, bucket, fetched.length);
+    } else {
+      budgetExceeded = true;
+    }
   }
 
   const places = await deps.queryNearby(q);
-  return { query: q, cellId, radiusBucket: bucket, cacheHit, places };
+  return { query: q, cellId, radiusBucket: bucket, cacheHit, budgetExceeded, places };
 }

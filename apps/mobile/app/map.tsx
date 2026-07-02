@@ -18,7 +18,7 @@ export default function MapScreen() {
     queryFn: () => fetchNearby(latN, lngN),
     enabled: Number.isFinite(latN) && Number.isFinite(lngN),
   });
-  const places = data?.places ?? [];
+  const places = data?.kind === "ok" ? data.result.places : [];
 
   return (
     <View style={{ flex: 1 }}>

@@ -12,7 +12,7 @@ import type { NearbyQuery, Place } from "@truebite/shared";
 const q: NearbyQuery = { lat: 40.99, lng: 29.03, radiusM: 2000, limit: 50, category: null };
 
 function makeDeps(overrides: Partial<NearbyDeps> = {}) {
-  const calls = { fetch: 0, upsert: 0, touch: 0, query: 0 };
+  const calls = { fetch: 0, upsert: 0, touch: 0, query: 0, budget: 0 };
   const deps: NearbyDeps = {
     cellPrecision: 6,
     isCellFresh: async () => true,
@@ -31,6 +31,11 @@ function makeDeps(overrides: Partial<NearbyDeps> = {}) {
       calls.query++;
       return [];
     },
+    tryConsumeBudget: async () => {
+      calls.budget++;
+      return true; // bütçe var (varsayılan)
+    },
+    googleCallsPerFetch: 5,
     ...overrides,
   };
   return { deps, calls };
@@ -85,5 +90,32 @@ test("cache MISS — sıra: Google → upsert → touch → query", async () => 
 
   const res = await getNearby(q, deps);
   assert.equal(res.cacheHit, false);
+  assert.equal(res.budgetExceeded, false);
   assert.deepEqual(order, ["fetch", "upsert", "touch", "query"]);
+});
+
+test("cache MISS + bütçe DOLU — Google'a gidilmez, bayat DB verisi servis edilir", async () => {
+  const { deps, calls } = makeDeps({
+    isCellFresh: async () => false,
+    tryConsumeBudget: async () => {
+      calls.budget++;
+      return false; // bütçe tavanı doldu
+    },
+  });
+
+  const res = await getNearby(q, deps);
+  assert.equal(res.cacheHit, false);
+  assert.equal(res.budgetExceeded, true); // altın kural: maliyet korundu
+  assert.equal(calls.budget, 1); // bütçe denendi
+  assert.equal(calls.fetch, 0); // ama Google'a GİDİLMEDİ
+  assert.equal(calls.upsert, 0);
+  assert.equal(calls.touch, 0);
+  assert.equal(calls.query, 1); // DB'den (bayat) yine de servis edildi
+});
+
+test("cache HIT — bütçe kapısı hiç denenmez (maliyet yok)", async () => {
+  const { deps, calls } = makeDeps({ isCellFresh: async () => true });
+  const res = await getNearby(q, deps);
+  assert.equal(res.cacheHit, true);
+  assert.equal(calls.budget, 0);
 });

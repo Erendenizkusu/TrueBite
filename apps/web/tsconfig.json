@@ -6,6 +6,9 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowJs": true,
+    // @truebite/shared kaynak .ts import'larını (Node yerel-TS için gerekli) tsc kabul etsin.
+    // noEmit ile uyumlu; Next build SWC kullandığı için derlemeyi etkilemez.
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,

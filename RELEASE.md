@@ -4,10 +4,24 @@
 > Altın kural (bkz. CLAUDE.md → Monetizasyon): **maliyet ≤ gelir; reklamla denge.**
 
 ## 🔴 A — Para & Maliyet Güvenliği (altın kural; gerçek release-blocker)
-- [ ] **API bütçe koruması**: günlük/aylık Google Places bütçe sayacı; aşılırsa istek reddet/kuyrukla.
-- [ ] **Kullanıcı-başı rate limit** (kötüye kullanım + maliyet patlaması koruması).
-- [ ] **Kullanıcı kimliği**: anonim auth / device-id — kota + token takibinin temeli.
-- [ ] **Günde 1-2 ücretsiz istek** kotası; bitince **rewarded ad** (AdMob) → +istek.
+- [x] **API bütçe koruması**: günlük/aylık Google Places bütçe sayacı (`usage_global` +
+      `try_consume_budget`); cache-miss'te Google'a GİTMEDEN düşülür, tavan dolunca çağrı
+      yapılmaz → bayat/DB verisi servis edilir (`budgetExceeded`). Tavan: `DAILY/MONTHLY_GOOGLE_BUDGET`.
+- [x] **Kullanıcı-başı rate limit / kota**: `usage_user` + `consume_user_request` (atomik);
+      cihaz-başına günlük ücretsiz istek (`FREE_REQUESTS_PER_DAY`). Aşılırsa **429** + `reason:watch_ad`.
+      Kalan hak `X-Quota-Remaining` header'ında.
+- [x] **Kullanıcı kimliği**: `X-Client-Id` başlığı (cihaz-id / anon uuid) → yoksa IP fallback.
+- [x] **Backend tarafı**: rewarded ad → +istek: `grant_ad_request` + `POST /quota/grant`
+      (`AD_GRANT_REQUESTS`). ⚠️ **Açık stub** — üretimde **AdMob SSV** ile korunmalı (aşağıda).
+- [x] **İstemci kota UX'i (web + mobil)**: cihaz kimliği (X-Client-Id: web localStorage uuid,
+      mobil bellek-uuid), kalan hak göstergesi ("bugün N keşif kaldı"), 429 → **LimitReached**
+      ekranı ("Reklam izle → 1 keşif daha" + grant çağrısı). Web uçtan uca doğrulandı
+      (429→grant→limit 2→3). Grant butonu şu an **STUB** — gerçek reklam yerine doğrudan
+      `/quota/grant`. Mobil client-id EAS/native build'de kalıcılaştırılacak.
+- [ ] **Gerçek reklam**: mobilde **AdMob rewarded ad SDK** (native build gerekir, Expo Go'da yok)
+      + web'de display ad. Stub grant'ı gerçek ödül callback'iyle değiştir. **DEPLOY ÖNCESİ ŞART.**
+- [ ] **AdMob SSV**: `/quota/grant` endpoint'ini sunucu-taraflı doğrulama ile koru (aksi halde
+      curl ile bedava kota üretilir). Deploy (§B) sonrası, gerçek AdMob hesabıyla.
 - [ ] (Büyüme) **Token** satın alma; fiyat = istek maliyeti + makul marj.
 
 ## 🔴 B — Dağıtım (şu an her şey localhost)

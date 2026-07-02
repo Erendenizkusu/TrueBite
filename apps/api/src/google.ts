@@ -120,6 +120,12 @@ function tileCenters(lat: number, lng: number, radiusM: number, grid: number): [
 const TILE_GRID = 2;
 
 /**
+ * Bir cache-miss'in yaptığı gerçek Google Places çağrı sayısı: 1 tüm-daire + TILE_GRID².
+ * Maliyet güvenliği (bütçe sayacı) bu sabiti Google'a GİTMEDEN ÖNCE düşer (bkz. nearby.ts).
+ */
+export const GOOGLE_CALLS_PER_FETCH = 1 + TILE_GRID * TILE_GRID;
+
+/**
  * Google Places (New) Nearby Search — yalnızca cache-miss durumunda çağrılır.
  *
  * KAPSAMLI ADAY HAVUZU (recall): Google tek çağrıda max 20 döndürür, sayfalama yok. Tek daire

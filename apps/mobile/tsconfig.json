@@ -2,6 +2,9 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // @truebite/shared kaynak .ts import'larını (Node yerel-TS için gerekli) tsc kabul etsin.
+    // Metro/Expo build'i etkilemez (noEmit typecheck).
+    "allowImportingTsExtensions": true,
     "paths": {
       "@/*": [
         "./*"

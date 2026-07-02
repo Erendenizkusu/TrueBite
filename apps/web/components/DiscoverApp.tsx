@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { NearbyResult } from "@truebite/shared";
 import { CATEGORIES } from "@/lib/categories";
+import { getClientId } from "@/lib/clientId";
 import { MapBackdrop } from "./MapBackdrop";
 import { FoodRain } from "./FoodRain";
 import { SpotRow } from "./SpotRow";
@@ -16,8 +17,13 @@ export function DiscoverApp() {
   const [status, setStatus] = useState<Status>("idle");
   const cat = CATEGORIES[catIdx]!;
   const resultsRef = useRef<HTMLElement>(null);
+  // Maliyet güvenliği kotası (RELEASE.md § A) — sunucudan header ile gelir.
+  const [quota, setQuota] = useState<{ remaining: number | null; limit: number | null } | null>(
+    null,
+  );
+  const [granting, setGranting] = useState(false);
 
-  const { data, isFetching, isError, refetch } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
     queryFn: async (): Promise<NearbyResult> => {
       const qs = new URLSearchParams({
@@ -27,14 +33,39 @@ export function DiscoverApp() {
         limit: "12",
       });
       if (cat.key !== "all") qs.set("category", cat.key);
-      const r = await fetch(`/api/nearby?${qs.toString()}`);
-      // Hatayı yut­ma: fırlat ki UI "sonuç yok" yerine "sunucuya ulaşılamadı" göstersin.
+      const r = await fetch(`/api/nearby?${qs.toString()}`, {
+        headers: { "X-Client-Id": getClientId() },
+      });
+      // Kalan kota her yanıtta header'da gelir (200 ve 429).
+      const rem = r.headers.get("x-quota-remaining");
+      const lim = r.headers.get("x-quota-limit");
+      setQuota({ remaining: rem != null ? Number(rem) : null, limit: lim != null ? Number(lim) : null });
+      // Kota doldu → ayrı ekran (gerçek hatadan farklı, tekrar denemek anlamsız).
+      if (r.status === 429) throw Object.assign(new Error("quota_exceeded"), { code: "quota" });
+      // Diğer hataları yut­ma: fırlat ki UI "sonuç yok" yerine "sunucuya ulaşılamadı" göstersin.
       if (!r.ok) throw new Error(`nearby ${r.status}`);
       return r.json();
     },
     enabled: status === "ready" && !!coords,
-    retry: 1,
+    // Kota hatasında tekrar deneme (429 kalır); yalnızca geçici hatada 1 kez dene.
+    retry: (count, err) => ((err as { code?: string })?.code === "quota" ? false : count < 1),
   });
+
+  const quotaExceeded = isError && (error as { code?: string })?.code === "quota";
+
+  // "Reklam izle → +1 keşif" (STUB: gerçek reklam entegrasyonuna kadar geçici).
+  async function watchAdForMore() {
+    setGranting(true);
+    try {
+      const r = await fetch("/api/quota/grant", {
+        method: "POST",
+        headers: { "X-Client-Id": getClientId() },
+      });
+      if (r.ok) await refetch();
+    } finally {
+      setGranting(false);
+    }
+  }
 
   // Konum alınınca sonuçlara yumuşakça kaydır (uzamsal süreklilik)
   useEffect(() => {
@@ -157,14 +188,20 @@ export function DiscoverApp() {
             <h2 className="font-display text-lg font-bold tracking-[-0.02em] sm:text-xl">
               {cat.key === "all" ? "En iyi mekanlar" : `En iyi ${cat.label.toLowerCase()} mekanları`}
             </h2>
-            {data && (
+            {quota?.remaining != null && !quotaExceeded ? (
+              <span className="font-mono text-[11px] text-stone" title="Bugünkü ücretsiz keşif hakkın">
+                bugün {quota.remaining} keşif kaldı
+              </span>
+            ) : data ? (
               <span className="font-mono text-[11px] text-stone">
                 {isFetching ? "sıralanıyor…" : data.cacheHit ? "● anlık" : "● az önce güncellendi"}
               </span>
-            )}
+            ) : null}
           </div>
 
-          {isFetching && places.length === 0 ? (
+          {quotaExceeded ? (
+            <LimitReached onWatchAd={watchAdForMore} granting={granting} />
+          ) : isFetching && places.length === 0 ? (
             <Loading />
           ) : isError ? (
             <ErrorState onRetry={() => refetch()} />
@@ -211,6 +248,30 @@ function Empty() {
       <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">
         Yarıçapı genişletmeyi ya da farklı bir kategori denemeyi dene.
       </p>
+    </div>
+  );
+}
+
+function LimitReached({ onWatchAd, granting }: { onWatchAd: () => void; granting: boolean }) {
+  // Kota doldu — maliyet güvenliği (altın kural). Kullanıcıyı reklamla ödüllendir ya da yarını beklet.
+  return (
+    <div className="mt-6 rounded-2xl border border-sage/40 bg-sage/10 px-6 py-16 text-center">
+      <p className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
+        Bugünlük ücretsiz keşif hakkın doldu
+      </p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-stone">
+        Kaliteli mekan verisi bize maliyet doğurur; adil kullanım için günlük bir sınır var.
+        Kısa bir reklam izleyerek bir keşif daha açabilir ya da yarın devam edebilirsin.
+      </p>
+      <button
+        onClick={onWatchAd}
+        disabled={granting}
+        aria-busy={granting}
+        className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-sage px-5 text-sm font-semibold text-paper transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:translate-y-0 disabled:opacity-70"
+      >
+        {granting ? "hazırlanıyor…" : "Reklam izle → 1 keşif daha"}
+      </button>
+      <p className="mx-auto mt-3 text-[11px] text-stone/70">Kota her gün sıfırlanır.</p>
     </div>
   );
 }

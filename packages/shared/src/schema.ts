@@ -50,6 +50,9 @@ export const nearbyResultSchema = z.object({
   cellId: z.string(),
   radiusBucket: z.number().int(),
   cacheHit: z.boolean(),
+  // Global günlük/aylık Google bütçe tavanı doldu → taze veri çekilemedi, bayat/DB
+  // verisi servis edildi (maliyet güvenliği; bkz. RELEASE.md § A). Normalde yok/false.
+  budgetExceeded: z.boolean().optional(),
   places: z.array(scoredPlaceSchema),
 });
 
