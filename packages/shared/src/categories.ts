@@ -48,12 +48,15 @@ export interface Category {
 }
 
 /**
- * Çiğ köfte adı deseni (case-insensitive, diakritik + ASCII varyantları).
- * Kapsar: "çiğ köfte", "çiğköfte", "çig kofte", "cig kofte", "çiğköfteci"…
+ * Çiğ köfte adı deseni (case-insensitive, diakritik + ASCII + TÜMÜ-BÜYÜK-HARF varyantları).
+ * Kapsar: "çiğ köfte", "çiğköfte", "cig kofte", "çiğköfteci", "ÇİĞ KÖFTE", "ÇİĞKÖFTECİM"…
  * Google Places'te çiğ köftecilerin ayrı bir türü yok (döner gibi `turkish_restaurant`);
  * döner ile çiğ köfteyi AYIRAN tek güvenilir sinyal mekân ADI'dır.
+ * NOT: Türkçe BÜYÜK harf diakritikleri (İ, Ğ, Ö) Postgres `~*` ASCII case-folding'iyle küçük
+ * harfe katlanmaz → karakter sınıflarına AÇIKÇA eklendi (aksi halde tümü-büyük-harf adlar kaçardı).
+ * Gerçek Postgres'te 10 örnek adla doğrulandı (çiğ köfte varyantları t, döner/düz-köfte f).
  */
-export const CIGKOFTE_NAME_PATTERN = "ç?i[ğg]\\s*k[öo]fte";
+export const CIGKOFTE_NAME_PATTERN = "[çÇ]?[iİ][ğĞgG]\\s*k[öÖoO]fte";
 
 export const CATEGORIES: Category[] = [
   { key: "all", label: "Tümü", ctaNoun: "mekanları", relevantTypes: null },
