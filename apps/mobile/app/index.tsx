@@ -151,8 +151,8 @@ function Hero({
       </Text>
 
       <Text style={s.sub}>
-        Algoritmamız sahte puanları temizledi, yapay zekâmız binlerce yorumu senin için
-        özetledi. Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
+        Algoritmamız şişirilmiş ve sahte puanları ayıkladı, binlerce yorumu ağırlıklandırdı.
+        Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
         <Text style={{ color: colors.ink, fontFamily: font.semibold }}>Hadi tıkla da gidelim.</Text>
       </Text>
 

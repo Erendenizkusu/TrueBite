@@ -119,7 +119,7 @@ export function DiscoverApp() {
           </h1>
 
           <p className="rise mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-stone sm:text-base">
-            Algoritmamız sahte puanları temizledi, yapay zekâmız binlerce yorumu senin için özetledi.
+            Algoritmamız şişirilmiş ve sahte puanları ayıkladı, binlerce yorumu ağırlıklandırdı.
             Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
             <strong className="font-semibold text-ink">Hadi tıkla da gidelim.</strong>
           </p>
