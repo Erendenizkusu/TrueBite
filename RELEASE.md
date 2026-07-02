@@ -24,11 +24,12 @@
       curl ile bedava kota üretilir). Deploy (§B) sonrası, gerçek AdMob hesabıyla.
 - [ ] (Büyüme) **Token** satın alma; fiyat = istek maliyeti + makul marj.
 
-## 🔴 B — Dağıtım (şu an her şey localhost)
-- [ ] **API deploy** (Railway/Render/Fly) → public URL.
-- [ ] **Supabase cloud**: proje oluştur, migration'ları uygula, service key'i API'ye ver.
-- [ ] **Web deploy** (Vercel); `API_BASE_URL` → prod API.
-- [ ] **Mobil**: EAS build; `EXPO_PUBLIC_API_BASE_URL` → prod API; **Maps SDK key** → app.json.
+## 🔴 B — Dağıtım (VERCEL-ONLY topoloji — runbook: DEPLOY.md)
+- [x] **Backend konsolidasyonu**: mantık `packages/core`'a çıkarıldı; web `/api/*` route'ları
+      backend'i çalıştırır (ayrı API host'u GEREKMEZ). Prod build geçti, yollar tekil (/api/*).
+- [ ] **Supabase cloud**: proje oluştur (EU) → `supabase link` + `supabase db push` (tüm migration'lar).
+- [ ] **Vercel deploy**: GitHub import, Root=apps/web, env değişkenleri (DEPLOY.md tablosu).
+- [ ] **Mobil**: `EXPO_PUBLIC_API_BASE_URL` → Vercel URL; **Maps SDK key** → app.json; EAS build.
 - [ ] **APK/Store**: EAS `preview` profili (paylaşılabilir APK) → sonra App Store / Play Store.
 
 ## 🟡 C — Yasal / Uyumluluk (EU/Rotterdam)
