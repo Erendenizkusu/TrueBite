@@ -28,59 +28,79 @@ import type { NearbyQuery, NearbyResult, HighlightsResult } from "@truebite/shar
 /**
  * TrueBite backend'i — Vercel serverless (Next.js route handler) tarafı.
  * Fastify (apps/api/server.ts) ile AYNI çekirdeği (@truebite/core) kullanır; burada yalnızca
- * bağımlılıkları (Supabase client + anahtarlar + bütçe konfigü) tek sefer bağlarız.
- * Modül kapsamı → soğuk-başlatma başına bir kez kurulur (istek başına değil).
+ * bağımlılıkları (Supabase client + anahtarlar + bütçe konfigü) bağlarız.
+ *
+ * LAZY-INIT: konfig/istemci İLK İSTEKTE kurulur (modül yüklenirken DEĞİL). Böylece `next build`
+ * sırasında (route modülleri import edilirken) sırlara ihtiyaç olmaz — build ortam değişkeni
+ * gerektirmez; anahtarlar yalnızca çalışma anında (Vercel serverless process.env) okunur.
  */
-const config = loadConfig();
-const sb = createSupabase(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
-
-const nearbyDeps: NearbyDeps = {
-  cellPrecision: config.CELL_PRECISION,
-  isCellFresh: (cellId, bucket) => isCellFresh(sb, cellId, bucket),
-  fetchFromGoogle: (q) => {
-    if (!config.GOOGLE_PLACES_API_KEY) {
-      throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil — cache-miss isteği yapılamıyor");
-    }
-    return fetchNearbyFromGoogle(q, config.GOOGLE_PLACES_API_KEY);
-  },
-  upsertPlaces: (places) => upsertPlaces(sb, places),
-  touchCell: (cellId, bucket, count) => touchCell(sb, cellId, bucket, count),
-  queryNearby: (q) => queryNearby(sb, q),
-  tryConsumeBudget: async (calls) =>
-    (await tryConsumeBudget(sb, calls, config.DAILY_GOOGLE_BUDGET, config.MONTHLY_GOOGLE_BUDGET))
-      .allowed,
-  googleCallsPerFetch: GOOGLE_CALLS_PER_FETCH,
+type Ctx = {
+  config: ReturnType<typeof loadConfig>;
+  sb: ReturnType<typeof createSupabase>;
+  nearbyDeps: NearbyDeps;
+  hlDeps: HighlightsDeps;
 };
 
-const hlDeps: HighlightsDeps = {
-  freshHighlights: (placeId) => freshHighlights(sb, placeId),
-  fetchReviews: (placeId) => {
-    if (!config.GOOGLE_PLACES_API_KEY) throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil");
-    return fetchPlaceReviews(placeId, config.GOOGLE_PLACES_API_KEY);
-  },
-  extract: (reviews) => {
-    if (!config.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY tanımlı değil");
-    return extractHighlights(reviews, config.ANTHROPIC_API_KEY);
-  },
-  upsert: (placeId, tags, count) => upsertHighlights(sb, placeId, tags, count, HIGHLIGHTS_MODEL),
-};
+let _ctx: Ctx | null = null;
+
+function ctx(): Ctx {
+  if (_ctx) return _ctx;
+  const config = loadConfig();
+  const sb = createSupabase(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
+
+  const nearbyDeps: NearbyDeps = {
+    cellPrecision: config.CELL_PRECISION,
+    isCellFresh: (cellId, bucket) => isCellFresh(sb, cellId, bucket),
+    fetchFromGoogle: (q) => {
+      if (!config.GOOGLE_PLACES_API_KEY) {
+        throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil — cache-miss isteği yapılamıyor");
+      }
+      return fetchNearbyFromGoogle(q, config.GOOGLE_PLACES_API_KEY);
+    },
+    upsertPlaces: (places) => upsertPlaces(sb, places),
+    touchCell: (cellId, bucket, count) => touchCell(sb, cellId, bucket, count),
+    queryNearby: (q) => queryNearby(sb, q),
+    tryConsumeBudget: async (calls) =>
+      (await tryConsumeBudget(sb, calls, config.DAILY_GOOGLE_BUDGET, config.MONTHLY_GOOGLE_BUDGET))
+        .allowed,
+    googleCallsPerFetch: GOOGLE_CALLS_PER_FETCH,
+  };
+
+  const hlDeps: HighlightsDeps = {
+    freshHighlights: (placeId) => freshHighlights(sb, placeId),
+    fetchReviews: (placeId) => {
+      if (!config.GOOGLE_PLACES_API_KEY) throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil");
+      return fetchPlaceReviews(placeId, config.GOOGLE_PLACES_API_KEY);
+    },
+    extract: (reviews) => {
+      if (!config.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY tanımlı değil");
+      return extractHighlights(reviews, config.ANTHROPIC_API_KEY);
+    },
+    upsert: (placeId, tags, count) => upsertHighlights(sb, placeId, tags, count, HIGHLIGHTS_MODEL),
+  };
+
+  _ctx = { config, sb, nearbyDeps, hlDeps };
+  return _ctx;
+}
 
 /** Cihaz kotasını atomik tüket (istek başına, nearby'den ÖNCE). */
 export function checkQuota(clientId: string): Promise<QuotaResult> {
+  const { sb, config } = ctx();
   return consumeUserRequest(sb, clientId, config.FREE_REQUESTS_PER_DAY);
 }
 
 /** Nearby çekirdek akışı (cache + bütçe kapısı içeride). */
 export function runNearby(q: NearbyQuery): Promise<NearbyResult> {
-  return getNearby(q, nearbyDeps);
+  return getNearby(q, ctx().nearbyDeps);
 }
 
 /** Reklam izleme → +istek hakkı. */
 export function grant(clientId: string): Promise<GrantResult> {
+  const { sb, config } = ctx();
   return grantAdRequest(sb, clientId, config.AD_GRANT_REQUESTS);
 }
 
 /** AI öne çıkan özellikler (Anthropic anahtarı gerektirir). */
 export function runHighlights(placeId: string): Promise<HighlightsResult> {
-  return getHighlights(placeId, hlDeps);
+  return getHighlights(placeId, ctx().hlDeps);
 }

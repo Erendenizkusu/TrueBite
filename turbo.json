@@ -3,7 +3,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [".next/**", "dist/**"],
+      "env": [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "GOOGLE_PLACES_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "FREE_REQUESTS_PER_DAY",
+        "AD_GRANT_REQUESTS",
+        "DAILY_GOOGLE_BUDGET",
+        "MONTHLY_GOOGLE_BUDGET",
+        "CELL_PRECISION"
+      ]
     },
     "test": {
       "dependsOn": ["^build"]
