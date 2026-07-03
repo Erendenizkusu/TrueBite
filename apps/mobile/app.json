@@ -38,7 +38,15 @@
           "locationWhenInUsePermission": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-0000000000000000~0000000000",
+          "iosAppId": "ca-app-pub-0000000000000000~0000000000",
+          "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
+        }
+      ]
     ],
     "extra": {
       "router": {}

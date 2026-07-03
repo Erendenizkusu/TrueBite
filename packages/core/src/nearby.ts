@@ -23,6 +23,9 @@ export interface NearbyDeps {
   tryConsumeBudget: (calls: number) => Promise<boolean>;
   // Bir cache-miss'in yapacağı gerçek Google çağrı sayısı (bütçeden düşülecek miktar).
   googleCallsPerFetch: number;
+  // Opsiyonel: AI kategori-uyum katmanı (RealScore sonrası yeniden sıralama). Verilmezse
+  // (ya da CATEGORY_FIT_TOP_N=0 ise) atlanır — nearby davranışı bugünküyle aynı kalır.
+  refineByCategoryFit?: (places: ScoredPlace[], q: NearbyQuery) => Promise<ScoredPlace[]>;
 }
 
 /**
@@ -55,6 +58,15 @@ export async function getNearby(q: NearbyQuery, deps: NearbyDeps): Promise<Nearb
     }
   }
 
-  const places = await deps.queryNearby(q);
+  let places = await deps.queryNearby(q);
+  // AI kategori-uyum katmanı (opsiyonel + savunmacı): asıl işi kategori olmayan mekânları
+  // yorum-analiziyle aşağı çeker. Hata olursa RealScore sıralamasına zarifçe düşer.
+  if (deps.refineByCategoryFit) {
+    try {
+      places = await deps.refineByCategoryFit(places, q);
+    } catch {
+      /* fit katmanı asla nearby'yi kırmaz — RealScore sırası korunur */
+    }
+  }
   return { query: q, cellId, radiusBucket: bucket, cacheHit, budgetExceeded, places };
 }

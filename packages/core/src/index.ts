@@ -13,13 +13,16 @@ export {
   touchCell,
   freshHighlights,
   upsertHighlights,
+  freshCategoryFit,
+  upsertCategoryFit,
 } from "./supabase.ts";
 
 export { fetchNearbyFromGoogle, fetchPlaceReviews, GOOGLE_CALLS_PER_FETCH } from "./google.ts";
 
 export { getNearby, type NearbyDeps } from "./nearby.ts";
+export { refineByCategoryFit, type CategoryFitDeps } from "./categoryFit.ts";
 
-export { extractHighlights, HIGHLIGHTS_MODEL } from "./ai.ts";
+export { extractHighlights, scoreCategoryFit, HIGHLIGHTS_MODEL } from "./ai.ts";
 export { getHighlights, type HighlightsDeps } from "./highlights.ts";
 
 export {

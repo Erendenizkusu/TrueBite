@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { ScoredPlace } from "@truebite/shared";
 import { fetchNearby, grantQuota } from "@/lib/api";
+import { showRewardedAd } from "@/lib/ads";
 import { colors, font, radius } from "@/lib/theme";
 import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
@@ -44,11 +45,14 @@ export default function Discover() {
   const quotaExceeded = data?.kind === "quota";
   const remaining = data && data.kind !== "error" ? data.quota.remaining : null;
 
-  // "Reklam izle → +1 keşif" (STUB: gerçek AdMob rewarded ad'e kadar geçici).
+  // "Reklam izle → +1 keşif": önce ödüllü reklam göster; kullanıcı ödülü kazanınca sunucudan
+  // +1 hak iste (grant) ve listeyi tazele. Expo Go'da reklam modülü yoksa ödül dev-fallback ile
+  // verilir (grant akışı test edilebilir). Reklam izlenmez/başarısızsa hak verilmez.
   async function watchAdForMore() {
     setGranting(true);
     try {
-      if (await grantQuota()) await refetch();
+      const earned = await showRewardedAd();
+      if (earned && (await grantQuota())) await refetch();
     } finally {
       setGranting(false);
     }

@@ -4,8 +4,7 @@ import { runHighlights } from "@/lib/server/backend";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** AI öne çıkan özellikler (Claude Haiku). Anthropic anahtarı yoksa 502 döner.
- *  Not: highlights özelliği şu an ertelenmiş (kredi gelince aktif). */
+/** AI öne çıkan özellikler (OpenAI gpt-4o-mini). OPENAI_API_KEY yoksa 502 döner. */
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ placeId: string }> },

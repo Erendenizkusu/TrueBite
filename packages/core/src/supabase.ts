@@ -138,3 +138,36 @@ export async function upsertHighlights(
   });
   if (error) throw new Error(`upsert_highlights: ${error.message}`);
 }
+
+/** Taze kategori-uyum skoru (0..1) — yoksa/bayatsa null. */
+export async function freshCategoryFit(
+  sb: SupabaseClient,
+  placeId: string,
+  category: string,
+): Promise<number | null> {
+  const { data, error } = await sb.rpc("fresh_category_fit", {
+    p_place_id: placeId,
+    p_category: category,
+  });
+  if (error) throw new Error(`fresh_category_fit: ${error.message}`);
+  return data == null ? null : Number(data);
+}
+
+/** Kategori-uyum skorunu önbelleğe yazar. */
+export async function upsertCategoryFit(
+  sb: SupabaseClient,
+  placeId: string,
+  category: string,
+  fit: number,
+  count: number,
+  model: string,
+): Promise<void> {
+  const { error } = await sb.rpc("upsert_category_fit", {
+    p_place_id: placeId,
+    p_category: category,
+    p_fit: fit,
+    p_count: count,
+    p_model: model,
+  });
+  if (error) throw new Error(`upsert_category_fit: ${error.message}`);
+}

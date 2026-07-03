@@ -1,4 +1,4 @@
-import type { NearbyResult } from "@truebite/shared";
+import type { NearbyResult, HighlightsResult } from "@truebite/shared";
 import { getClientId } from "@/lib/clientId";
 
 // Cihaz/emülatör dev makineye localhost ile erişemez.
@@ -56,6 +56,22 @@ export async function fetchNearby(
     return { kind: "ok", result: (await res.json()) as NearbyResult, quota };
   } catch {
     return { kind: "error" };
+  }
+}
+
+/**
+ * AI "öne çıkan özellikler" — mekana dokununca yorumlardan derlenen etiketler (OpenAI).
+ * Sonuç placeId başına cache'li (backend). Hata/anahtar yoksa null → UI zarifçe düşer.
+ */
+export async function fetchHighlights(placeId: string): Promise<HighlightsResult | null> {
+  try {
+    const res = await fetch(`${BASE}/api/places/${encodeURIComponent(placeId)}/highlights`, {
+      headers: { "X-Client-Id": getClientId() },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as HighlightsResult;
+  } catch {
+    return null;
   }
 }
 

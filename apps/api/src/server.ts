@@ -16,9 +16,13 @@ import {
   getNearby,
   type NearbyDeps,
   extractHighlights,
+  scoreCategoryFit,
   HIGHLIGHTS_MODEL,
   getHighlights,
   type HighlightsDeps,
+  refineByCategoryFit,
+  freshCategoryFit,
+  upsertCategoryFit,
   consumeUserRequest,
   grantAdRequest,
   tryConsumeBudget,
@@ -65,6 +69,29 @@ export function buildServer(config: AppConfig) {
       (await tryConsumeBudget(sb, calls, config.DAILY_GOOGLE_BUDGET, config.MONTHLY_GOOGLE_BUDGET))
         .allowed,
     googleCallsPerFetch: GOOGLE_CALLS_PER_FETCH,
+    // AI kategori-uyum katmanı — yalnızca açık (topN>0) + anahtarlar varsa; aksi halde bypass.
+    refineByCategoryFit:
+      config.CATEGORY_FIT_TOP_N > 0 && config.OPENAI_API_KEY && config.GOOGLE_PLACES_API_KEY
+        ? (places, q) =>
+            refineByCategoryFit(places, q, {
+              topN: config.CATEGORY_FIT_TOP_N,
+              floor: config.CATEGORY_FIT_FLOOR,
+              freshFit: (placeId, category) => freshCategoryFit(sb, placeId, category),
+              fetchReviews: (placeId) => fetchPlaceReviews(placeId, config.GOOGLE_PLACES_API_KEY!),
+              scoreFit: (reviews, label) => scoreCategoryFit(reviews, label, config.OPENAI_API_KEY!),
+              upsertFit: (placeId, category, fit, count) =>
+                upsertCategoryFit(sb, placeId, category, fit, count, HIGHLIGHTS_MODEL),
+              tryConsumeBudget: async (calls) =>
+                (
+                  await tryConsumeBudget(
+                    sb,
+                    calls,
+                    config.DAILY_GOOGLE_BUDGET,
+                    config.MONTHLY_GOOGLE_BUDGET,
+                  )
+                ).allowed,
+            })
+        : undefined,
   };
 
   const hlDeps: HighlightsDeps = {
@@ -74,8 +101,8 @@ export function buildServer(config: AppConfig) {
       return fetchPlaceReviews(placeId, config.GOOGLE_PLACES_API_KEY);
     },
     extract: (reviews) => {
-      if (!config.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY tanımlı değil");
-      return extractHighlights(reviews, config.ANTHROPIC_API_KEY);
+      if (!config.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY tanımlı değil");
+      return extractHighlights(reviews, config.OPENAI_API_KEY);
     },
     upsert: (placeId, tags, count) => upsertHighlights(sb, placeId, tags, count, HIGHLIGHTS_MODEL),
   };

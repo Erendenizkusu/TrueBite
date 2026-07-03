@@ -60,10 +60,36 @@ export interface Category {
  */
 export const CIGKOFTE_NAME_PATTERN = "[çÇ]?[iİ][ğĞgG]\\s*k[öÖoO]fte";
 
+/**
+ * DÖNER kategorisini kirleten, Google'ın AYNI `turkish_restaurant` türüne koyduğu bitişik
+ * mutfaklar — ad-bazlı DIŞLA (nameExclude). Test geri bildirimi (2026-07-03, Konya + diğer
+ * konumlar): döner listesine çiğ köfteciler + kokoreççiler + etli ekmekçiler + pizzacılar
+ * sızıyordu (hepsi `turkish_restaurant` etiketli; primaryType generic olduğu için tür-kapısını
+ * geçiyorlar). Ayırt edici tek güvenilir sinyal = mekân ADI → regex alternasyonu.
+ *   - kokoreç / KOKOREÇ / kokoreçci      → "kokore[çÇcC]"
+ *   - etli ekmek / ETLİ EKMEK (Konya)     → "etl[iİ]\s*ekmek"
+ *   - pizza / PİZZA / pizzacı             → "p[iİ]zza"
+ * NOT (Postgres `~*` ASCII case-fold): Türkçe BÜYÜK harf diakritikleri (İ, Ç, Ö) küçüğe
+ * katlanmaz → karakter sınıflarına AÇIKÇA eklendi (aksi halde TÜMÜ-BÜYÜK adlar kaçardı).
+ * TAKAS: "Döner & Pizza" gibi kombo dükkânlar da elenebilir (asıl-işi döner değil sayılır);
+ * ince ayrım ileride AI kategori-uyum skoruna ait (bkz [[place-filtering-logic]]).
+ */
+export const KOKOREC_NAME_PATTERN = "kokore[çÇcC]";
+export const ETLI_EKMEK_NAME_PATTERN = "etl[iİ]\\s*ekmek";
+export const PIZZA_NAME_PATTERN = "p[iİ]zza";
+
+/** Döner nameExclude — çiğ köfte + kokoreç + etli ekmek + pizza (regex alternasyonu). */
+export const DONER_EXCLUDE_PATTERN = [
+  CIGKOFTE_NAME_PATTERN,
+  KOKOREC_NAME_PATTERN,
+  ETLI_EKMEK_NAME_PATTERN,
+  PIZZA_NAME_PATTERN,
+].join("|");
+
 export const CATEGORIES: Category[] = [
   { key: "all", label: "Tümü", ctaNoun: "mekanları", relevantTypes: null },
   { key: "coffee", label: "Kahve", ctaNoun: "kahvecileri", relevantTypes: ["coffee_shop", "cafe"], strictPrimary: true },
-  { key: "doner", label: "Döner", ctaNoun: "dönercileri", relevantTypes: ["turkish_restaurant"], nameExclude: CIGKOFTE_NAME_PATTERN },
+  { key: "doner", label: "Döner", ctaNoun: "dönercileri", relevantTypes: ["turkish_restaurant"], nameExclude: DONER_EXCLUDE_PATTERN },
   { key: "pizza", label: "Pizza", ctaNoun: "pizzacıları", relevantTypes: ["pizza_restaurant"] },
   { key: "sushi", label: "Sushi", ctaNoun: "suşi restoranlarını", relevantTypes: ["sushi_restaurant"] },
   { key: "burger", label: "Burger", ctaNoun: "burgercileri", relevantTypes: ["hamburger_restaurant"] },

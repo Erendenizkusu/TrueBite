@@ -6,8 +6,8 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   // Cache-miss isteklerinde gerekli; yoksa sadece cache-hit yolu çalışır.
   GOOGLE_PLACES_API_KEY: z.string().min(1).optional(),
-  // AI "öne çıkan özellikler" için gerekli; yoksa highlights endpoint'i devre dışı.
-  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  // AI "öne çıkan özellikler" için gerekli (OpenAI gpt-4o-mini); yoksa highlights endpoint'i devre dışı.
+  OPENAI_API_KEY: z.string().min(1).optional(),
   PORT: z.coerce.number().int().positive().default(8787),
   // geohash hücre çözünürlüğü (önbellek anahtarı). 6 ≈ 1.2km hücre.
   CELL_PRECISION: z.coerce.number().int().min(1).max(12).default(6),
@@ -15,6 +15,15 @@ const envSchema = z.object({
   // Bölge-altı puanlı ama çok-yorumlu (kanıtlanmış) markaları öne çıkarır. 0 = kapalı.
   // Kalibrasyon kolu — gerçek-veri geri bildirimiyle ayarlanır (bkz. bayesian-realscore-formula).
   TRUST_WEIGHT: z.coerce.number().min(0).max(2).default(0.25),
+
+  // ─── AI Kategori-Uyum skoru (yorumdan "özellikle X'te iyi mi") ───
+  // Top-N mekân için yorum çekip AI ile fit (0..1) hesaplar, RealScore'u ölçekleyip yeniden
+  // sıralar. VARSAYILAN 0 = KAPALI (altın kural: review-fetch Google maliyeti doğurur; gelir
+  // gelince aç). N≈limit (örn. 12) → görünen tüm liste yeniden sıralanır. Cache: (place,kategori).
+  CATEGORY_FIT_TOP_N: z.coerce.number().int().nonnegative().default(0),
+  // Harmanlama tabanı: adjusted = realScore * (floor + (1-floor)*fit). floor=0.6 → fit=0 olan
+  // mekân puanının %60'ını korur (tamamen silinmez), fit=1 tam korur. Kalibrasyon kolu.
+  CATEGORY_FIT_FLOOR: z.coerce.number().min(0).max(1).default(0.6),
 
   // ─── Maliyet güvenliği (RELEASE.md § A / altın kural) ───
   // Kullanıcı(cihaz) başına GÜNLÜK ücretsiz istek. Bitince reklam izle → +istek.
