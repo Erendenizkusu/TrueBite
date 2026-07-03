@@ -15,5 +15,5 @@ export {
   nearbyResultSchema,
 } from "./schema.ts";
 export type { NearbyQuery, Place, ScoredPlace, NearbyResult } from "./schema.ts";
-export { HIGHLIGHT_TAGS, highlightsSchema } from "./highlights.ts";
+export { HIGHLIGHT_TAGS, highlightsSchema, HIGHLIGHTS_MAX_RANK } from "./highlights.ts";
 export type { HighlightTag, Highlights, HighlightsResult } from "./highlights.ts";

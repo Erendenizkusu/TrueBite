@@ -19,6 +19,14 @@ export const HIGHLIGHT_TAGS = [
 
 export type HighlightTag = (typeof HIGHLIGHT_TAGS)[number];
 
+/**
+ * Maliyet güvenliği (altın kural): AI "öne çıkanlar" YALNIZCA listenin ilk N mekânı için
+ * çekilebilir (her genişletme cache-miss'te 1 Google Place Details "reviews" + 1 AI çağrısı
+ * doğurur). İlk 3 = kullanıcının en çok ilgileneceği mekânlar; alt sıralar için AI çağrısı yok.
+ * Web (SpotRow) + mobil (SpotCard) bu sabiti paylaşır → tek yerden ayarlanır.
+ */
+export const HIGHLIGHTS_MAX_RANK = 3;
+
 /** Claude structured output şeması — model en fazla 4 etiketi listeden seçer. */
 export const highlightsSchema = z.object({
   features: z.array(z.enum(HIGHLIGHT_TAGS)).max(4),

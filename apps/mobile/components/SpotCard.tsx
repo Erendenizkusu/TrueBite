@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import type { ScoredPlace } from "@truebite/shared";
+import { HIGHLIGHTS_MAX_RANK, type ScoredPlace } from "@truebite/shared";
 import { colors, font } from "@/lib/theme";
 import { fmtDistance, fmtReviews, trustLabel, type Tone } from "@/lib/format";
 import { fetchHighlights } from "@/lib/api";
@@ -16,6 +16,8 @@ const tone: Record<Tone, string> = {
 export function SpotCard({ place, rank }: { place: ScoredPlace; rank: number }) {
   const lead = rank === 1;
   const trust = trustLabel(place.userRatingsTotal);
+  // Maliyet güvenliği: AI öne çıkanlar yalnızca ilk N mekânda (her açış Google+AI maliyeti).
+  const expandable = rank <= HIGHLIGHTS_MAX_RANK;
   const [open, setOpen] = useState(false);
 
   // AI öne çıkanları YALNIZCA kart açılınca çek (lazy — maliyet kullanıcı niyetiyle tetiklenir).
@@ -23,14 +25,18 @@ export function SpotCard({ place, rank }: { place: ScoredPlace; rank: number }) 
   const { data, isFetching } = useQuery({
     queryKey: ["highlights", place.placeId],
     queryFn: () => fetchHighlights(place.placeId),
-    enabled: open,
+    enabled: open && expandable,
     staleTime: 1000 * 60 * 60,
     retry: false,
   });
   const tags = data?.tags ?? [];
 
   return (
-    <Pressable onPress={() => setOpen((v) => !v)} style={[s.card, lead && s.cardLead]}>
+    <Pressable
+      onPress={expandable ? () => setOpen((v) => !v) : undefined}
+      disabled={!expandable}
+      style={[s.card, lead && s.cardLead]}
+    >
       <View style={s.row}>
         <Text style={[s.rank, { color: lead ? colors.ember : colors.stone }]}>
           {String(rank).padStart(2, "0")}
