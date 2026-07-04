@@ -11,12 +11,14 @@ export function SiteFooter() {
           <p className="mt-1 font-mono text-sm text-stone">
             No fake reviews, just the best spots.
           </p>
-          <Link
-            href="/gizlilik"
-            className="mt-3 inline-block font-mono text-xs text-stone underline-offset-2 hover:text-ink hover:underline"
-          >
-            Gizlilik Politikası
-          </Link>
+          <div className="mt-3 flex gap-4 font-mono text-xs text-stone">
+            <Link href="/hakkinda" className="underline-offset-2 hover:text-ink hover:underline">
+              Hakkında
+            </Link>
+            <Link href="/gizlilik" className="underline-offset-2 hover:text-ink hover:underline">
+              Gizlilik Politikası
+            </Link>
+          </div>
         </div>
         <p className="max-w-xs text-xs leading-relaxed text-stone">
           Veriler Google Places üzerinden alınır, Volicious RealScore (Bayesyen ağırlıklı puan)
