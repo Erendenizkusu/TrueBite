@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "TrueBite web — SEO/SSR odaklı mekan keşif vitrini.",
+  "description": "Volicious web — SEO/SSR odaklı mekan keşif vitrini.",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",

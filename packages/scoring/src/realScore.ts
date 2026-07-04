@@ -1,5 +1,5 @@
 /**
- * TrueBite — RealScore (Bayesyen ağırlıklı puan).
+ * Volicious — RealScore (Bayesyen ağırlıklı puan).
  *
  * Bu dosya, SQL fonksiyonu `public.nearby_places`
  * (supabase/migrations/20260630120300_nearby_places.sql) ile BİREBİR aynı matematiği

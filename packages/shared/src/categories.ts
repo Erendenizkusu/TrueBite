@@ -1,5 +1,5 @@
 /**
- * TrueBite — Kategori tanımları (TEK DOĞRULUK KAYNAĞI).
+ * Volicious — Kategori tanımları (TEK DOĞRULUK KAYNAĞI).
  *
  * Web, mobil ve API bu listeyi paylaşır (kopya yok). Her kategori, Google Places (New)
  * taksonomisindeki "alakalı türler" kümesine eşlenir.

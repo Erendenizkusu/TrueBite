@@ -1,6 +1,6 @@
 # @truebite/shared
 
-TrueBite'ın **paylaşılan sözleşme katmanı**: web, mobil ve backend'in ortak kullandığı tipler,
+Volicious'ın **paylaşılan sözleşme katmanı**: web, mobil ve backend'in ortak kullandığı tipler,
 zod şemaları ve önbellek grid anahtarı.
 
 ## İçerik

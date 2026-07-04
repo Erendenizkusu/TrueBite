@@ -1,4 +1,4 @@
-# TrueBite — Deploy Runbook (§B)
+# Volicious — Deploy Runbook (§B)
 
 > Topoloji (Vercel-only): **web + backend tek Next.js uygulaması** (Vercel serverless route'lar),
 > **Supabase cloud** (DB), Google/OpenAI anahtarları Vercel env'de. Ayrı API host'u YOK.
@@ -39,7 +39,7 @@ Google Places API  +  OpenAI (gpt-4o-mini: highlights + kategori-uyum)
 
 ## 2) Vercel (web + backend)
 
-Vercel → **Add New → Project → GitHub → Erendenizkusu/TrueBite**.
+Vercel → **Add New → Project → GitHub → Erendenizkusu/Volicious**.
 
 **Ayarlar:**
 - **Root Directory:** `apps/web`  (Turborepo otomatik algılanır; install repo kökünden yapılır)

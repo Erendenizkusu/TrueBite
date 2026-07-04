@@ -1,6 +1,6 @@
 # @truebite/mobile
 
-TrueBite mobil uygulaması — **Expo + React Native + Expo Router + TanStack Query**. Web ile aynı
+Volicious mobil uygulaması — **Expo + React Native + Expo Router + TanStack Query**. Web ile aynı
 backend'i (`/places/nearby`) ve aynı "Ölçülmüş dürüstlük" tasarım dilini paylaşır.
 
 ## Konum-bağımsız (önemli)

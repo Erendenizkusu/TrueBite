@@ -17,7 +17,7 @@ const PRICE_LEVELS: Record<string, number | null> = {
 };
 
 /**
- * Google Places (New) searchNearby yanıtını TrueBite Place[]'e normalize eder.
+ * Google Places (New) searchNearby yanıtını Volicious Place[]'e normalize eder.
  * Saf fonksiyon — test edilebilir. placeSchema ile doğrulanır (bozuk veri erken yakalanır).
  */
 export function normalizeGooglePlaces(json: unknown): Place[] {

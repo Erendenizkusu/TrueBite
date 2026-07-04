@@ -1,7 +1,7 @@
 import type { ScoredPlace } from "@truebite/shared";
 
 /**
- * Müşteri-dostu rozet: büyük TrueBite Puanı + kanıt olarak ham Google puanı +
+ * Müşteri-dostu rozet: büyük Volicious Puanı + kanıt olarak ham Google puanı +
  * tek net güven etiketi. İç-mekanik (delta/"düzeltildi") gösterilmez.
  *   - çok yorumlu  → "✓ güvenilir"
  *   - az yorumlu   → "az yorumlu" (temkinli ol)
@@ -22,7 +22,7 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
         <span className="font-mono text-xs text-stone">/5</span>
       </div>
       <span className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-stone">
-        TrueBite Puanı
+        Volicious Puanı
       </span>
 
       {place.rating != null && (

@@ -1,5 +1,5 @@
 /**
- * TrueBite backend çekirdeği — TEK DOĞRULUK KAYNAĞI.
+ * Volicious backend çekirdeği — TEK DOĞRULUK KAYNAĞI.
  * Fastify (apps/api, yerel dev) ve Next.js route'ları (apps/web, Vercel prod) buradan beslenir.
  * İş mantığı burada; HTTP kabuğu ince (server.ts / route.ts).
  */

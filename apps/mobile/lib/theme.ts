@@ -1,4 +1,4 @@
-// TrueBite mobil tasarım belirteçleri — web ile aynı "Ölçülmüş dürüstlük" (koyu müze) dili.
+// Volicious mobil tasarım belirteçleri — web ile aynı "Ölçülmüş dürüstlük" (koyu müze) dili.
 
 export const colors = {
   paper: "#17130D", // derin sıcak charcoal — zemin

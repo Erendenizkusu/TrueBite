@@ -2,7 +2,7 @@
   "name": "@truebite/core",
   "version": "0.0.0",
   "private": true,
-  "description": "TrueBite backend çekirdeği — nearby orkestrasyon, Google Places, Supabase RPC, kota/bütçe, AI highlights. Hem Fastify (yerel) hem Next.js route'ları (Vercel) buradan beslenir (tek doğruluk kaynağı).",
+  "description": "Volicious backend çekirdeği — nearby orkestrasyon, Google Places, Supabase RPC, kota/bütçe, AI highlights. Hem Fastify (yerel) hem Next.js route'ları (Vercel) buradan beslenir (tek doğruluk kaynağı).",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

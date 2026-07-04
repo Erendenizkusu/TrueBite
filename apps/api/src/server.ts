@@ -179,7 +179,7 @@ const config = loadConfig();
 const app = buildServer(config);
 app
   .listen({ port: config.PORT, host: "0.0.0.0" })
-  .then((addr) => app.log.info(`TrueBite API hazır: ${addr}`))
+  .then((addr) => app.log.info(`Volicious API hazır: ${addr}`))
   .catch((err) => {
     app.log.error(err);
     process.exit(1);

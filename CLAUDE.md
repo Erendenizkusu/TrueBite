@@ -1,4 +1,4 @@
-# TrueBite — Proje Talimatları (CLAUDE.md)
+# Volicious — Proje Talimatları (CLAUDE.md)
 
 > Mottosu: **"No fake reviews, just the best spots."** Konuma en yakın, RealScore (Bayesyen
 > ağırlıklı puan) ile sıralanmış **gerçekten** en iyi mekanları listeleyen mobil + web ürünü.
@@ -65,6 +65,6 @@ cd apps/mobile && npx expo start    # mobil
 Kullanıcı oturumu bitirdiğini belirttiğinde ("bu kadar yeter", "şimdilik bu kadar", çıkış, vb.):
 
 1. **Son güncellemeleri GitHub'a commit'le** (anlamlı, açıklayıcı mesajla).
-2. **Proje yeni ise**, proje adıyla (örn. `TrueBite`) bir GitHub reposu oluştur ve **push'la**.
+2. **Proje yeni ise**, proje adıyla (örn. `Volicious`) bir GitHub reposu oluştur ve **push'la**.
 3. Var olan repoya, mevcut branch'e commit + push yap.
 4. Sırlar (`.env`) asla push'lanmaz — `.gitignore` ile korunduğunu doğrula.

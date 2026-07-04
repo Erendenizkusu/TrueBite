@@ -1,4 +1,4 @@
-# TrueBite — Release Yol Haritası
+# Volicious — Release Yol Haritası
 
 > Canlı checklist. Bir madde tamamlanınca `[x]` işaretle. Öncelik: 🔴 blocker, 🟡 launch-öncesi, 🟢 cila.
 > Altın kural (bkz. CLAUDE.md → Monetizasyon): **maliyet ≤ gelir; reklamla denge.**

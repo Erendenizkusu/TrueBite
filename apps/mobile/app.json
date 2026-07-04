@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "TrueBite",
-    "slug": "truebite",
-    "scheme": "truebite",
+    "name": "Volicious",
+    "slug": "volicious",
+    "scheme": "volicious",
     "version": "0.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -13,13 +13,13 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.truebite",
+      "bundleIdentifier": "app.volicious",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
       }
     },
     "android": {
-      "package": "app.truebite",
+      "package": "app.volicious",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
@@ -42,7 +42,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-0000000000000000~0000000000",
+          "androidAppId": "ca-app-pub-2707472203466324~8911844974",
           "iosAppId": "ca-app-pub-0000000000000000~0000000000",
           "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
         }

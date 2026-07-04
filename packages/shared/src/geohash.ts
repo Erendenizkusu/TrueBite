@@ -1,5 +1,5 @@
 /**
- * TrueBite — Önbellek grid anahtarı (geohash).
+ * Volicious — Önbellek grid anahtarı (geohash).
  *
  * MİMARİ: Önbellek anahtarı ham lat/lng DEĞİLDİR (her sorgu benzersiz koordinat olur,
  * önbellek hiç tutmaz). Bunun yerine konum bir geohash hücresine yuvarlanır. Bu `cell_id`

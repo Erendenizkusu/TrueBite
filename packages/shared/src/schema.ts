@@ -1,5 +1,5 @@
 /**
- * TrueBite — Paylaşılan zod şemaları + çıkarsanan TS tipleri.
+ * Volicious — Paylaşılan zod şemaları + çıkarsanan TS tipleri.
  *
  * zod, runtime doğrulamanın TEK kaynağıdır; TS tipleri `z.infer` ile buradan türetilir
  * (drift olmaz). İstemciden gelen güvenilmez girdiler (örn. HTTP query parametreleri)

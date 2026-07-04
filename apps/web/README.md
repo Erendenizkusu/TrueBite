@@ -1,6 +1,6 @@
 # @truebite/web
 
-TrueBite web vitrini — **Next.js 15 (App Router) + Tailwind v4 + TanStack Query**. SEO/SSR
+Volicious web vitrini — **Next.js 15 (App Router) + Tailwind v4 + TanStack Query**. SEO/SSR
 odaklı: organik trafiği yakalayıp mobil uygulamaya köprü kurar.
 
 ## Tasarım yönü — "Ölçülmüş dürüstlük"

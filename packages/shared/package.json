@@ -1,7 +1,7 @@
 {
   "name": "@truebite/shared",
   "version": "0.0.0",
-  "description": "TrueBite paylaşılan tipler, zod şemaları ve geohash önbellek anahtarı.",
+  "description": "Volicious paylaşılan tipler, zod şemaları ve geohash önbellek anahtarı.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * TrueBite — Maliyet güvenliği (RELEASE.md § A / altın kural) API sarmalayıcıları.
+ * Volicious — Maliyet güvenliği (RELEASE.md § A / altın kural) API sarmalayıcıları.
  *
  * İki bağımsız sayaç, SQL tarafında ATOMİK olarak yönetilir (bkz.
  * migrations/20260702120000_usage_cost_safety.sql). Buradaki fonksiyonlar yalnızca

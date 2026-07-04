@@ -2,7 +2,7 @@
   "name": "truebite",
   "private": true,
   "version": "0.0.0",
-  "description": "TrueBite — No fake reviews, just the best spots.",
+  "description": "Volicious — No fake reviews, just the best spots.",
   "workspaces": [
     "apps/*",
     "packages/*"

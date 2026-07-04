@@ -1,6 +1,6 @@
 # @truebite/api
 
-TrueBite backend — **ince orkestrasyon + önbellek katmanı** (Fastify + TypeScript). Skorlama ve
+Volicious backend — **ince orkestrasyon + önbellek katmanı** (Fastify + TypeScript). Skorlama ve
 geo filtre DAİMA DB'de (`nearby_places`); burada yalnızca akış yönetilir.
 
 ## Endpoint

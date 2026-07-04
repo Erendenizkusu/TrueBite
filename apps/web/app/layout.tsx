@@ -27,12 +27,12 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TrueBite — Sahte yorum yok, sadece en iyi mekanlar",
+  title: "Volicious — Sahte yorum yok, sadece en iyi mekanlar",
   description:
     "Konumuna en yakın, gerçekten en iyi puanlı restoranlar. Az yorumlu şişirilmiş puanları eleyen RealScore algoritmasıyla — dürüst, nokta atışı keşif.",
-  metadataBase: new URL("https://truebite.app"),
+  metadataBase: new URL("https://volicious.app"),
   openGraph: {
-    title: "TrueBite — Sahte yorum yok, sadece en iyi mekanlar",
+    title: "Volicious — Sahte yorum yok, sadece en iyi mekanlar",
     description:
       "Şişirilmiş 5.0'ları eleyen, köklü mekanları öne çıkaran RealScore'la gerçek keşif.",
     type: "website",

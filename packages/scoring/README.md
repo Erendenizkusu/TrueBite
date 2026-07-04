@@ -1,6 +1,6 @@
 # @truebite/scoring
 
-TrueBite **RealScore** — Bayesyen ağırlıklı puanın TypeScript implementasyonu. SQL fonksiyonu
+Volicious **RealScore** — Bayesyen ağırlıklı puanın TypeScript implementasyonu. SQL fonksiyonu
 `public.nearby_places` ile **birebir aynı matematiğin ikizi**; UI'da anlık skor gösterimi,
 testler ve istemci tarafı hesap için kullanılır.
 

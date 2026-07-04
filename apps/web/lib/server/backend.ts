@@ -30,7 +30,7 @@ import {
 import type { NearbyQuery, NearbyResult, HighlightsResult } from "@truebite/shared";
 
 /**
- * TrueBite backend'i — Vercel serverless (Next.js route handler) tarafı.
+ * Volicious backend'i — Vercel serverless (Next.js route handler) tarafı.
  * Fastify (apps/api/server.ts) ile AYNI çekirdeği (@truebite/core) kullanır; burada yalnızca
  * bağımlılıkları (Supabase client + anahtarlar + bütçe konfigü) bağlarız.
  *

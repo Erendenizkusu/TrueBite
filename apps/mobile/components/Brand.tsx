@@ -5,7 +5,7 @@ export function Brand({ size = 19 }: { size?: number }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "baseline" }}>
       <Text style={{ fontFamily: font.extrabold, fontSize: size, color: colors.ink, letterSpacing: -0.6 }}>
-        TrueBite
+        Volicious
       </Text>
       <Text style={{ fontFamily: font.extrabold, fontSize: size, color: colors.sage }}>.</Text>
     </View>

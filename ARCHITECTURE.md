@@ -1,4 +1,4 @@
-# TrueBite — Mimari & Teknik Vizyon
+# Volicious — Mimari & Teknik Vizyon
 
 > **Motto:** _"No fake reviews, just the best spots."_
 > Zaman kaybettirmeyen, dürüst ve nokta atışı mekan listeleme.
@@ -10,12 +10,12 @@ algoritma mantığı ve kısıtlar burada yaşar.
 
 ## 1. Vizyon & Çözülen Problem
 
-TrueBite; kullanıcının bulunduğu konuma en yakın, en popüler ve **gerçek anlamda** en yüksek
+Volicious; kullanıcının bulunduğu konuma en yakın, en popüler ve **gerçek anlamda** en yüksek
 puanlı restoranları listeler.
 
 **Çözülen büyük problem:** Google Haritalar gibi platformlardaki **düz aritmetik ortalama**
 sorunu. 5 yorumla 5.0 puan almış şişirilmiş/yeni mekanlar, 4500 yorumla 4.6 almış köklü ve
-harika mekanların önüne geçiyor. TrueBite bu çarpıklığı düzeltir.
+harika mekanların önüne geçiyor. Volicious bu çarpıklığı düzeltir.
 
 **Çözüm:** Yorum sayısı ile ham puanı oranlayan, manipülasyonu ve az-yorumlu yüksek puanları
 eleyen **dinamik bir Bayesyen puanlama algoritması (RealScore)**.
@@ -24,7 +24,7 @@ eleyen **dinamik bir Bayesyen puanlama algoritması (RealScore)**.
 
 ## 2. Marka & Motto
 
-- **İsim:** TrueBite — _"True"_ (dürüst/gerçek) + _"Bite"_ (lokma/yemek). Mottoyla birebir
+- **İsim:** Volicious — _"True"_ (dürüst/gerçek) + _"Bite"_ (lokma/yemek). Mottoyla birebir
   örtüşür ve trademark açısından ayırt edicidir.
 - **Motto:** "No fake reviews, just the best spots."
 
@@ -34,7 +34,7 @@ eleyen **dinamik bir Bayesyen puanlama algoritması (RealScore)**.
 
 | Alan | Karar | Gerekçe |
 |------|-------|---------|
-| **Marka** | TrueBite | Mottoyla birebir; ayırt edici |
+| **Marka** | Volicious | Mottoyla birebir; ayırt edici |
 | **Mobil** | React Native (Expo) | Web (Next.js) ile aynı dil/tip paylaşımı, tek yetenek havuzu |
 | **Backend** | Node.js (TypeScript) | Uçtan uca tek dil; Supabase JS SDK birinci sınıf |
 | **Web** | Next.js + Tailwind CSS + TanStack Query | SEO/SSR odaklı; organik trafik → app indirme köprüsü |

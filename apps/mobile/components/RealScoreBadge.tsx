@@ -3,7 +3,7 @@ import type { ScoredPlace } from "@truebite/shared";
 import { colors, font } from "@/lib/theme";
 
 /**
- * Müşteri-dostu rozet (web ile aynı): büyük TrueBite Puanı + kanıt olarak ham Google
+ * Müşteri-dostu rozet (web ile aynı): büyük Volicious Puanı + kanıt olarak ham Google
  * puanı + tek net güven etiketi. İç-mekanik (delta/"düzeltildi") GÖSTERİLMEZ.
  *   - çok yorumlu → "✓ güvenilir"   - az yorumlu → "az yorumlu"
  */

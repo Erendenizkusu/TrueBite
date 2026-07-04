@@ -15,7 +15,7 @@ function clientIdOf(req: NextRequest): string {
 }
 
 /**
- * TrueBite backend'i (Vercel serverless). Fastify ile aynı çekirdek (@truebite/core).
+ * Volicious backend'i (Vercel serverless). Fastify ile aynı çekirdek (@truebite/core).
  * Akış: kota kapısı → nearby (cache + bütçe kapısı içeride). Kota header'da döner.
  */
 export async function GET(req: NextRequest) {
