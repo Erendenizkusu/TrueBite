@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Hanken_Grotesk, JetBrains_Mono, Fraunces } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
+
+// Web reklam (Google AdSense) — env-gated. Yalnızca yayıncı ID'si tanımlıysa script yüklenir
+// (default-kapalı: maliyet/gizlilik güvenliği). Detay: components/AdSlot.tsx.
+const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
 const hanken = Hanken_Grotesk({
   subsets: ["latin", "latin-ext"],
@@ -43,6 +48,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${hanken.variable} ${fraunces.variable} ${mono.variable}`}>
       <body className="relative">
+        {adsenseClient && (
+          <Script
+            id="adsbygoogle-init"
+            async
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+          />
+        )}
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-line">
@@ -9,6 +11,12 @@ export function SiteFooter() {
           <p className="mt-1 font-mono text-sm text-stone">
             No fake reviews, just the best spots.
           </p>
+          <Link
+            href="/gizlilik"
+            className="mt-3 inline-block font-mono text-xs text-stone underline-offset-2 hover:text-ink hover:underline"
+          >
+            Gizlilik Politikası
+          </Link>
         </div>
         <p className="max-w-xs text-xs leading-relaxed text-stone">
           Veriler Google Places üzerinden alınır, Volicious RealScore (Bayesyen ağırlıklı puan)

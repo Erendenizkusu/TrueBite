@@ -8,6 +8,7 @@ import { getClientId } from "@/lib/clientId";
 import { MapBackdrop } from "./MapBackdrop";
 import { FoodRain } from "./FoodRain";
 import { SpotRow } from "./SpotRow";
+import { AdSlot } from "./AdSlot";
 
 type Status = "idle" | "locating" | "ready" | "denied";
 
@@ -225,6 +226,12 @@ export function DiscoverApp() {
                 <SpotRow key={p.placeId} place={p} rank={i + 1} />
               ))}
             </ol>
+          )}
+
+          {/* Reklam — yalnızca sonuç varken ve AdSense yapılandırılmışsa (aksi halde AdSlot null döner).
+              Sonuçların ALTINDA: içeriği bölmeyen, "ölçülmüş dürüstlük" tasarımını bozmayan tek yuva. */}
+          {places.length > 0 && !quotaExceeded && (
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FEED} className="mt-10" />
           )}
         </section>
       )}

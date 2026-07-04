@@ -16,7 +16,9 @@
         "CELL_PRECISION",
         "TRUST_WEIGHT",
         "CATEGORY_FIT_TOP_N",
-        "CATEGORY_FIT_FLOOR"
+        "CATEGORY_FIT_FLOOR",
+        "NEXT_PUBLIC_ADSENSE_CLIENT",
+        "NEXT_PUBLIC_ADSENSE_SLOT_FEED"
       ]
     },
     "test": {
