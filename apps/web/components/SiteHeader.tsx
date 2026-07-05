@@ -11,11 +11,8 @@ export function SiteHeader() {
           aria-label="Volicious ana sayfa"
         >
           <Mark size={26} className="text-ink transition-transform group-hover:-translate-y-0.5" />
-          <span className="inline-flex items-baseline">
-            <span className="text-[20px] font-extrabold tracking-[-0.03em]">Volicious</span>
-            <span className="text-[20px] font-extrabold text-sage transition-transform group-hover:scale-125">
-              .
-            </span>
+          <span className="text-[19px] font-extrabold uppercase leading-none tracking-[0.14em]">
+            <span className="text-sage">V</span>OLICIOUS
           </span>
         </Link>
         <span className="hidden font-mono text-xs uppercase tracking-[0.18em] text-stone sm:inline">
