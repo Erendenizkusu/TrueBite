@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { Mark } from "./Mark";
 
 export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-line">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-end sm:justify-between sm:px-8">
         <div>
-          <p className="text-xl font-extrabold tracking-[-0.02em]">
-            Volicious<span className="text-sage">.</span>
+          <p className="flex items-center gap-2 text-xl font-extrabold tracking-[-0.02em]">
+            <Mark size={24} className="text-ink" />
+            <span>Volicious<span className="text-sage">.</span></span>
           </p>
           <p className="mt-1 font-mono text-sm text-stone">
             No fake reviews, just the best spots.
