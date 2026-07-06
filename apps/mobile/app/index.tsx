@@ -21,8 +21,7 @@ import { SpotCard } from "@/components/SpotCard";
 import { FoodRain } from "@/components/FoodRain";
 
 // KONUM-BAĞIMSIZ & konsept-öncelikli: kullanıcı butona basınca konum alınır.
-const FALLBACK = { lat: 51.9225, lng: 4.4792 }; // izin yoksa: Rotterdam
-
+// Konum verilmezse rastgele şehir DEMOSU göstermeyiz (yanıltıcı) → "konumunu paylaş" ekranı.
 type Status = "idle" | "locating" | "ready" | "denied";
 type Coords = { lat: number; lng: number };
 
@@ -38,9 +37,7 @@ export default function Discover() {
   const { data, isFetching, refetch } = useQuery({
     queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
     queryFn: () => fetchNearby(coords!.lat, coords!.lng, 4000, cat.key),
-    // "denied" durumunda da çalışmalı: konum reddedilince fallback (Rotterdam) koordinatı
-    // ayarlanıyor ve kullanıcıya "örnek gösteriliyor" deniyor — sorgu çalışmazsa boş liste kalır.
-    enabled: (status === "ready" || status === "denied") && !!coords,
+    enabled: status === "ready" && !!coords,
   });
   // Ayrıştırılmış dönüş: ok / kota-doldu / hata.
   const result = data?.kind === "ok" ? data.result : null;
@@ -66,7 +63,6 @@ export default function Discover() {
     try {
       const { status: perm } = await Location.requestForegroundPermissionsAsync();
       if (perm !== "granted") {
-        setCoords(FALLBACK);
         setStatus("denied");
         return;
       }
@@ -74,12 +70,11 @@ export default function Discover() {
       setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       setStatus("ready");
     } catch {
-      setCoords(FALLBACK);
       setStatus("denied");
     }
   }
-  // "denied" durumunda da fallback ile sonuç göster
-  const ready = status === "ready" || status === "denied";
+  // Konum verilmezse (denied) sonuç göstermeyiz → "konumunu paylaş" ekranına yönlendiririz.
+  const ready = status === "ready";
   // Liste henüz yokken (idle/konum/iskelet/boş/kota) hero'yu dikey ortala → buton-altı
   // boşluk kapanır, içerik üste sıkışmaz. Gerçek sonuç gelince üstten normal akışa döner.
   const hasResults = ready && !quotaExceeded && places.length > 0;
@@ -117,6 +112,8 @@ export default function Discover() {
             <LimitReached onWatchAd={watchAdForMore} granting={granting} />
           ) : status === "locating" || (ready && isFetching) ? (
             <Skeleton />
+          ) : status === "denied" ? (
+            <LocationPrompt onGrant={locateAndSearch} />
           ) : ready ? (
             <Empty />
           ) : null
@@ -210,7 +207,7 @@ function Hero({
 
       <Text style={s.note}>
         {status === "denied"
-          ? "Konuma ulaşamadık — örnek olarak Rotterdam gösteriliyor."
+          ? "Konum izni gerekli — en iyi mekanları görmek için aşağıdan paylaş."
           : "Tek dokunuş. En iyileri RealScore'a göre sıralarız — şişirilmiş puanlar elenir."}
       </Text>
 
@@ -262,6 +259,26 @@ function Empty() {
     <View style={s.empty}>
       <Text style={s.emptyTitle}>bu kategoride yakınında mekan bulunamadı</Text>
       <Text style={s.emptyText}>Farklı bir kategori ya da daha geniş bir alan dene.</Text>
+    </View>
+  );
+}
+
+function LocationPrompt({ onGrant }: { onGrant: () => void }) {
+  // Konum verilmedi/reddedildi — rastgele şehir demosu YOK; konumu paylaşmaya yönlendiririz.
+  return (
+    <View style={s.limit}>
+      <Text style={s.limitTitle}>Konumunu paylaş</Text>
+      <Text style={s.limitText}>
+        Volicious, çevrendeki gerçekten en iyi mekanları bulmak için konumunu kullanır.
+        Konum izni olmadan sana özel liste gösteremeyiz.
+      </Text>
+      <Pressable
+        onPress={onGrant}
+        style={({ pressed }) => [s.limitCta, pressed && { opacity: 0.75 }]}
+      >
+        <Text style={s.limitCtaText}>Konum iznini ver</Text>
+      </Pressable>
+      <Text style={s.limitNote}>İzni kalıcı reddettiysen: Ayarlar › Uygulamalar › Volicious › İzinler.</Text>
     </View>
   );
 }
