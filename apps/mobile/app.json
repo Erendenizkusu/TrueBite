@@ -34,7 +34,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyB1OsBwluIOfIC3SRjq_PMZNYMtSvYmOmY"
         }
-      }
+      },
+      "versionCode": 2
     },
     "plugins": [
       "expo-router",
@@ -52,10 +53,22 @@
           "iosAppId": "ca-app-pub-0000000000000000~0000000000",
           "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.2.0"
+          }
+        }
       ]
     ],
     "extra": {
-      "router": {}
-    }
+      "router": {},
+      "eas": {
+        "projectId": "54410ef9-cbab-42c5-99f7-3e5c19dbd872"
+      }
+    },
+    "owner": "eren_denizkusu"
   }
 }
