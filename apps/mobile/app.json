@@ -35,7 +35,7 @@
           "apiKey": "AIzaSyB1OsBwluIOfIC3SRjq_PMZNYMtSvYmOmY"
         }
       },
-      "versionCode": 3
+      "versionCode": 4
     },
     "plugins": [
       "expo-router",
