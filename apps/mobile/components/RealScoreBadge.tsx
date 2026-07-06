@@ -15,7 +15,7 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
       <Text style={[s.score, { color: lead ? colors.ember : colors.ink, fontSize: lead ? 32 : 27 }]}>
         {place.realScore.toFixed(2)}
       </Text>
-      <Text style={s.label}>TRUEBITE PUANI</Text>
+      <Text style={s.label}>VOLICIOUS PUANI</Text>
       {place.rating != null && (
         <Text style={s.raw}>Google ★ {place.rating.toFixed(1)}</Text>
       )}

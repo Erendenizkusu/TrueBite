@@ -38,7 +38,9 @@ export default function Discover() {
   const { data, isFetching, refetch } = useQuery({
     queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
     queryFn: () => fetchNearby(coords!.lat, coords!.lng, 4000, cat.key),
-    enabled: status === "ready" && !!coords,
+    // "denied" durumunda da çalışmalı: konum reddedilince fallback (Rotterdam) koordinatı
+    // ayarlanıyor ve kullanıcıya "örnek gösteriliyor" deniyor — sorgu çalışmazsa boş liste kalır.
+    enabled: (status === "ready" || status === "denied") && !!coords,
   });
   // Ayrıştırılmış dönüş: ok / kota-doldu / hata.
   const result = data?.kind === "ok" ? data.result : null;
