@@ -91,7 +91,7 @@ export const CATEGORIES: Category[] = [
   { key: "coffee", label: "Kahve", ctaNoun: "kahvecileri", relevantTypes: ["coffee_shop", "cafe"], strictPrimary: true },
   { key: "doner", label: "Döner", ctaNoun: "dönercileri", relevantTypes: ["turkish_restaurant"], nameExclude: DONER_EXCLUDE_PATTERN },
   { key: "pizza", label: "Pizza", ctaNoun: "pizzacıları", relevantTypes: ["pizza_restaurant"] },
-  { key: "sushi", label: "Sushi", ctaNoun: "suşi restoranlarını", relevantTypes: ["sushi_restaurant"] },
+  { key: "sushi", label: "Sushi", ctaNoun: "sushi restoranlarını", relevantTypes: ["sushi_restaurant"] },
   { key: "burger", label: "Burger", ctaNoun: "burgercileri", relevantTypes: ["hamburger_restaurant"] },
   { key: "seafood", label: "Balık", ctaNoun: "balık restoranlarını", relevantTypes: ["seafood_restaurant"] },
   { key: "dessert", label: "Tatlı", ctaNoun: "tatlıcıları", relevantTypes: ["dessert_shop", "ice_cream_shop", "dessert_restaurant"], strictPrimary: true },

@@ -18,6 +18,7 @@ import { colors, font, radius } from "@/lib/theme";
 import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
 import { SpotCard } from "@/components/SpotCard";
+import { FoodRain } from "@/components/FoodRain";
 
 // KONUM-BAĞIMSIZ & konsept-öncelikli: kullanıcı butona basınca konum alınır.
 const FALLBACK = { lat: 51.9225, lng: 4.4792 }; // izin yoksa: Rotterdam
@@ -77,9 +78,14 @@ export default function Discover() {
   }
   // "denied" durumunda da fallback ile sonuç göster
   const ready = status === "ready" || status === "denied";
+  // Liste henüz yokken (idle/konum/iskelet/boş/kota) hero'yu dikey ortala → buton-altı
+  // boşluk kapanır, içerik üste sıkışmaz. Gerçek sonuç gelince üstten normal akışa döner.
+  const hasResults = ready && !quotaExceeded && places.length > 0;
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: colors.paper }}>
+      {/* Hero (liste yok) ekranının arka plan katmanı: yiyecek yağmuru + sage parıltı. */}
+      {!hasResults && <FoodRain />}
       <View style={s.header}>
         <Brand />
         <Text style={s.headerTag}>GERÇEK PUAN, GERÇEK MEKAN</Text>
@@ -113,7 +119,12 @@ export default function Discover() {
             <Empty />
           ) : null
         }
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 32 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: insets.bottom + 32,
+          flexGrow: 1,
+          justifyContent: hasResults ? "flex-start" : "center",
+        }}
         showsVerticalScrollIndicator={false}
       />
     </View>

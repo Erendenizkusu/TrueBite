@@ -1,21 +1,15 @@
 import { useState } from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
 import { HIGHLIGHTS_MAX_RANK, type ScoredPlace } from "@truebite/shared";
 import { colors, font } from "@/lib/theme";
-import { fmtDistance, fmtReviews, trustLabel, type Tone } from "@/lib/format";
+import { fmtDistance, fmtReviews } from "@/lib/format";
 import { fetchHighlights } from "@/lib/api";
 import { RealScoreBadge } from "./RealScoreBadge";
 
-const tone: Record<Tone, string> = {
-  pine: colors.pine,
-  ember: colors.ember,
-  stone: colors.stone,
-};
-
 export function SpotCard({ place, rank }: { place: ScoredPlace; rank: number }) {
   const lead = rank === 1;
-  const trust = trustLabel(place.userRatingsTotal);
   // Maliyet güvenliği: AI öne çıkanlar yalnızca ilk N mekânda (her açış Google+AI maliyeti).
   const expandable = rank <= HIGHLIGHTS_MAX_RANK;
   const [open, setOpen] = useState(false);
@@ -43,17 +37,29 @@ export function SpotCard({ place, rank }: { place: ScoredPlace; rank: number }) 
         </Text>
 
         <View style={{ flex: 1, paddingRight: 12 }}>
-          <Text style={s.name} numberOfLines={2}>
-            {place.name}
-          </Text>
+          <View style={s.nameRow}>
+            <Text style={[s.name, { flexShrink: 1 }]} numberOfLines={2}>
+              {place.name}
+            </Text>
+            {/* Açılabilir kartlarda chevron ipucu (web SpotRow ile aynı) — açılınca döner. */}
+            {expandable && (
+              <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
+                <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="m6 9 6 6 6-6"
+                    stroke={colors.stone}
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </View>
+            )}
+          </View>
           <View style={s.meta}>
             <Text style={s.metaText}>{fmtDistance(place.distanceM)}</Text>
             <Text style={s.dot}>·</Text>
             <Text style={s.metaText}>{fmtReviews(place.userRatingsTotal)}</Text>
-            <Text style={s.dot}>·</Text>
-            <Text style={[s.metaText, { color: tone[trust.tone], fontFamily: font.semibold }]}>
-              {trust.label}
-            </Text>
           </View>
         </View>
 
@@ -91,6 +97,7 @@ const s = StyleSheet.create({
   cardLead: { borderTopColor: "rgba(169,178,126,0.5)" },
   row: { flexDirection: "row", alignItems: "flex-start" },
   rank: { fontFamily: font.monoBold, fontSize: 18, width: 34, paddingTop: 2 },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   name: { fontFamily: font.bold, fontSize: 19, color: colors.ink, letterSpacing: -0.3 },
   meta: { flexDirection: "row", alignItems: "center", marginTop: 6, flexWrap: "wrap" },
   metaText: { fontFamily: font.regular, fontSize: 13, color: colors.stone },
