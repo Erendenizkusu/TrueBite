@@ -35,7 +35,7 @@
           "apiKey": "AIzaSyB1OsBwluIOfIC3SRjq_PMZNYMtSvYmOmY"
         }
       },
-      "versionCode": 2
+      "versionCode": 3
     },
     "plugins": [
       "expo-router",
@@ -54,14 +54,7 @@
           "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
         }
       ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "2.2.0"
-          }
-        }
-      ]
+      "./plugins/withKotlinMetadataSkip"
     ],
     "extra": {
       "router": {},
