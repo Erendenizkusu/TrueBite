@@ -54,7 +54,7 @@ function ctx(): Ctx {
 
   const nearbyDeps: NearbyDeps = {
     cellPrecision: config.CELL_PRECISION,
-    isCellFresh: (cellId, bucket) => isCellFresh(sb, cellId, bucket),
+    isCellFresh: (cellId, bucket) => isCellFresh(sb, cellId, bucket, config.CACHE_TTL_DAYS),
     fetchFromGoogle: (q) => {
       if (!config.GOOGLE_PLACES_API_KEY) {
         throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil — cache-miss isteği yapılamıyor");
@@ -95,7 +95,7 @@ function ctx(): Ctx {
   };
 
   const hlDeps: HighlightsDeps = {
-    freshHighlights: (placeId) => freshHighlights(sb, placeId),
+    freshHighlights: (placeId) => freshHighlights(sb, placeId, config.HIGHLIGHTS_TTL_DAYS),
     fetchReviews: (placeId) => {
       if (!config.GOOGLE_PLACES_API_KEY) throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil");
       return fetchPlaceReviews(placeId, config.GOOGLE_PLACES_API_KEY);

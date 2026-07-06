@@ -11,15 +11,20 @@ export function createSupabase(url: string, serviceKey: string): SupabaseClient 
   return createClient(url, serviceKey, { auth: { persistSession: false } });
 }
 
-/** Grid hücresi 3 gün içinde dolduruldu mu? (is_cell_fresh SQL fonksiyonu) */
+/**
+ * Grid hücresi verilen TTL içinde dolduruldu mu? (is_cell_fresh SQL fonksiyonu)
+ * @param ttlDays Tazelik penceresi (gün). Verilmezse SQL varsayılanı (3 gün) kullanılır.
+ */
 export async function isCellFresh(
   sb: SupabaseClient,
   cellId: string,
   bucket: number,
+  ttlDays?: number,
 ): Promise<boolean> {
   const { data, error } = await sb.rpc("is_cell_fresh", {
     p_cell_id: cellId,
     p_radius_bucket: bucket,
+    ...(ttlDays != null ? { p_ttl: `${ttlDays} days` } : {}),
   });
   if (error) throw new Error(`is_cell_fresh: ${error.message}`);
   return data === true;
@@ -112,12 +117,19 @@ export async function touchCell(
   if (error) throw new Error(`touch_cell: ${error.message}`);
 }
 
-/** Taze AI etiketleri (yoksa/bayatsa null). */
+/**
+ * Taze AI etiketleri (yoksa/bayatsa null).
+ * @param ttlDays Tazelik penceresi (gün). Verilmezse SQL varsayılanı (7 gün) kullanılır.
+ */
 export async function freshHighlights(
   sb: SupabaseClient,
   placeId: string,
+  ttlDays?: number,
 ): Promise<HighlightTag[] | null> {
-  const { data, error } = await sb.rpc("fresh_highlights", { p_place_id: placeId });
+  const { data, error } = await sb.rpc("fresh_highlights", {
+    p_place_id: placeId,
+    ...(ttlDays != null ? { p_ttl: `${ttlDays} days` } : {}),
+  });
   if (error) throw new Error(`fresh_highlights: ${error.message}`);
   return (data as HighlightTag[] | null) ?? null;
 }

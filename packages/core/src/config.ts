@@ -16,6 +16,17 @@ const envSchema = z.object({
   // Kalibrasyon kolu — gerçek-veri geri bildirimiyle ayarlanır (bkz. bayesian-realscore-formula).
   TRUST_WEIGHT: z.coerce.number().min(0).max(2).default(0.25),
 
+  // ─── Önbellek tazeliği (TTL) — maliyet kaldıracı ───
+  // Grid hücresi (nearby arama sonuçları) kaç gün taze sayılır. Uzatmak = aynı bölgeden
+  // tekrar gelen isteklerde Google'a GİTMEME → daha az maliyet (özellikle trafik popüler
+  // bölgelerde yoğunlaştıkça). ⚠️ Kapsamı DÜŞÜRMEZ: her cache-miss zaten TAM tiling (3x3)
+  // yapıp bölgenin tüm mekanlarını tek seferde çeker; TTL yalnızca gerçek-dünya
+  // değişikliklerinin (yeni/kapanan yer, puan) yenilenme SIKLIĞINI azaltır. Google ToS: max 30 gün.
+  CACHE_TTL_DAYS: z.coerce.number().int().positive().max(30).default(10),
+  // AI öne çıkanlar ($0.025 Place Details "Atmosphere" SKU) önbelleği kaç gün taze. Uzun TTL
+  // bu pahalı SKU'nun tekrarını doğrudan azaltır. Yorumlar yavaş değişir → 14 gün güvenli.
+  HIGHLIGHTS_TTL_DAYS: z.coerce.number().int().positive().max(30).default(14),
+
   // ─── AI Kategori-Uyum skoru (yorumdan "özellikle X'te iyi mi") ───
   // Top-N mekân için yorum çekip AI ile fit (0..1) hesaplar, RealScore'u ölçekleyip yeniden
   // sıralar. VARSAYILAN 0 = KAPALI (altın kural: review-fetch Google maliyeti doğurur; gelir
