@@ -9,6 +9,7 @@ import { MapBackdrop } from "./MapBackdrop";
 import { FoodRain } from "./FoodRain";
 import { SpotRow } from "./SpotRow";
 import { AdSlot } from "./AdSlot";
+import { LocationHelp, type GeoBlocker } from "./LocationHelp";
 
 type Status = "idle" | "locating" | "ready" | "denied";
 
@@ -16,8 +17,9 @@ export function DiscoverApp() {
   const [catIdx, setCatIdx] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [status, setStatus] = useState<Status>("idle");
-  // Konum hatasının türü — mesajı doğru göstermek için (izin reddi ≠ zaman aşımı/sinyal).
-  const [geoErr, setGeoErr] = useState<"permission" | "unavailable" | null>(null);
+  // Engelin TÜRÜ — çözümü belirler: tarayıcı site izni ≠ cihazın konum servisi ≠ zaman aşımı.
+  // Tek "reddedildi" mesajı göstermek kullanıcıyı çıkmaza sokuyordu (gerçek geri bildirim).
+  const [blocker, setBlocker] = useState<GeoBlocker | null>(null);
   const cat = CATEGORIES[catIdx]!;
   const resultsRef = useRef<HTMLElement>(null);
   // Maliyet güvenliği kotası (RELEASE.md § A) — sunucudan header ile gelir.
@@ -79,20 +81,32 @@ export function DiscoverApp() {
 
   function locateAndSearch() {
     if (!navigator.geolocation) {
-      setGeoErr("unavailable");
+      setBlocker("unsupported");
       setStatus("denied");
       return;
     }
-    setGeoErr(null);
+    setBlocker(null);
     setStatus("locating");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setStatus("ready");
       },
-      (err) => {
-        // code 1 = izin reddi; 2/3 = konum yok / zaman aşımı → mesajı buna göre ayır.
-        setGeoErr(err.code === 1 ? "permission" : "unavailable");
+      async (err) => {
+        // code 1 = site izni reddi · 2 = konum alınamıyor (çoğunlukla İŞLETİM SİSTEMİ'nin konum
+        // servisi kapalı) · 3 = zaman aşımı. Bu ayrım şart: OS kapalıyken tarayıcı izni vermek
+        // hiçbir işe yaramaz, tersi de öyle.
+        let b: GeoBlocker = err.code === 1 ? "permission" : err.code === 3 ? "timeout" : "services";
+        // Permissions API kesin konuşur: site izni "denied" ise sorun tarayıcı iznindedir.
+        if (b !== "permission") {
+          try {
+            const st = await navigator.permissions?.query({ name: "geolocation" as PermissionName });
+            if (st?.state === "denied") b = "permission";
+          } catch {
+            /* Permissions API yoksa hata koduna güven */
+          }
+        }
+        setBlocker(b);
         setStatus("denied");
       },
       // Mobilde daha güvenilir: yüksek-hassasiyet KAPALI (GPS beklemez, ağ konumu yeter;
@@ -178,13 +192,16 @@ export function DiscoverApp() {
                   : `Konumumdaki en popüler ${cat.ctaNoun} listele`}
               </button>
 
-              <p className="mx-auto mt-4 max-w-sm text-xs text-stone">
-                {status === "denied"
-                  ? geoErr === "permission"
-                    ? "Konum izni verilmemiş — adres çubuğundaki site ayarlarından konuma izin verip tekrar dene."
-                    : "Konumuna ulaşılamadı (sinyal zayıf olabilir ya da zaman aşımı). Tekrar dene."
-                  : "Tek dokunuş. Konumundaki en iyileri RealScore'a göre sıralayalım — şişirilmiş puanlar elenir."}
-              </p>
+              {status === "denied" ? (
+                // Konum engellendi → tek satırlık mesaj YETMİYOR (kullanıcılar konumu nereden
+                // açacaklarını bulamıyordu). OS + tarayıcıya özel adım adım yönerge gösteriyoruz.
+                <LocationHelp blocker={blocker} onRetry={locateAndSearch} />
+              ) : (
+                <p className="mx-auto mt-4 max-w-sm text-xs text-stone">
+                  Tek dokunuş. Konumundaki en iyileri RealScore&apos;a göre sıralayalım — şişirilmiş
+                  puanlar elenir.
+                </p>
+              )}
             </div>
           </div>
 

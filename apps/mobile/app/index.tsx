@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,22 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  AppState,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Location from "expo-location";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { ScoredPlace } from "@truebite/shared";
 import { fetchNearby, grantQuota } from "@/lib/api";
 import { showRewardedAd } from "@/lib/ads";
+import {
+  locate,
+  servicesEnabled,
+  openLocationSettings,
+  openAppSettings,
+  type Blocker,
+} from "@/lib/location";
 import { colors, font, radius } from "@/lib/theme";
 import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
@@ -31,6 +39,8 @@ export default function Discover() {
   const [catIdx, setCatIdx] = useState(0);
   const [coords, setCoords] = useState<Coords | null>(null);
   const [status, setStatus] = useState<Status>("idle");
+  // Engelin türü — "izin yok" ile "cihazın konum servisi kapalı" farklı çözümler ister.
+  const [blocker, setBlocker] = useState<Blocker | null>(null);
   const cat = CATEGORIES[catIdx]!;
 
   const [granting, setGranting] = useState(false);
@@ -60,20 +70,30 @@ export default function Discover() {
 
   async function locateAndSearch() {
     setStatus("locating");
-    try {
-      const { status: perm } = await Location.requestForegroundPermissionsAsync();
-      if (perm !== "granted") {
-        setStatus("denied");
-        return;
-      }
-      const pos = await Location.getCurrentPositionAsync({});
-      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    const r = await locate();
+    if (r.ok) {
+      setCoords({ lat: r.lat, lng: r.lng });
+      setBlocker(null);
       setStatus("ready");
-    } catch {
-      setStatus("denied");
+      return;
     }
+    setBlocker(r.blocker);
+    setStatus("denied");
   }
-  // Konum verilmezse (denied) sonuç göstermeyiz → "konumunu paylaş" ekranına yönlendiririz.
+
+  // Kullanıcı sistem konum ayarlarına gidip GPS'i açtıysa, geri döndüğünde uygulamayı elle
+  // yeniden başlatmasın: öne gelince servisi tekrar kontrol et, açıldıysa kendiliğinden ara.
+  const blockerRef = useRef<Blocker | null>(null);
+  blockerRef.current = blocker;
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", async (state) => {
+      if (state !== "active" || blockerRef.current !== "services") return;
+      if (await servicesEnabled()) locateAndSearch();
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Konum verilmezse (denied) sonuç göstermeyiz → engele uygun yönlendirme ekranı gösteririz.
   const ready = status === "ready";
   // Liste henüz yokken (idle/konum/iskelet/boş/kota) hero'yu dikey ortala → buton-altı
   // boşluk kapanır, içerik üste sıkışmaz. Gerçek sonuç gelince üstten normal akışa döner.
@@ -98,6 +118,7 @@ export default function Discover() {
             catIdx={catIdx}
             onCat={setCatIdx}
             status={status}
+            blocker={blocker}
             onLocate={locateAndSearch}
             resultCount={ready && !quotaExceeded ? places.length : null}
             remaining={remaining}
@@ -113,7 +134,7 @@ export default function Discover() {
           ) : status === "locating" || (ready && isFetching) ? (
             <Skeleton />
           ) : status === "denied" ? (
-            <LocationPrompt onGrant={locateAndSearch} />
+            <LocationPrompt blocker={blocker} onRetry={locateAndSearch} />
           ) : ready ? (
             <Empty />
           ) : null
@@ -135,6 +156,7 @@ function Hero({
   catIdx,
   onCat,
   status,
+  blocker,
   onLocate,
   resultCount,
   remaining,
@@ -145,6 +167,7 @@ function Hero({
   catIdx: number;
   onCat: (i: number) => void;
   status: Status;
+  blocker: Blocker | null;
   onLocate: () => void;
   resultCount: number | null;
   remaining: number | null;
@@ -206,9 +229,15 @@ function Hero({
       </Pressable>
 
       <Text style={s.note}>
-        {status === "denied"
-          ? "Konum izni gerekli — en iyi mekanları görmek için aşağıdan paylaş."
-          : "Tek dokunuş. En iyileri RealScore'a göre sıralarız — şişirilmiş puanlar elenir."}
+        {status !== "denied"
+          ? "Tek dokunuş. En iyileri RealScore'a göre sıralarız — şişirilmiş puanlar elenir."
+          : blocker === "services"
+            ? "Cihazının konumu kapalı — aşağıdan konum ayarlarını açabilirsin."
+            : blocker === "permission-blocked"
+              ? "Konum izni engellenmiş — aşağıdan uygulama ayarlarını açabilirsin."
+              : blocker === "unavailable"
+                ? "Konumuna ulaşılamadı — aşağıdan tekrar deneyebilirsin."
+                : "Konum izni gerekli — en iyi mekanları görmek için aşağıdan paylaş."}
       </Text>
 
       {/* sonuç başlığı */}
@@ -263,22 +292,63 @@ function Empty() {
   );
 }
 
-function LocationPrompt({ onGrant }: { onGrant: () => void }) {
-  // Konum verilmedi/reddedildi — rastgele şehir demosu YOK; konumu paylaşmaya yönlendiririz.
+function LocationPrompt({ blocker, onRetry }: { blocker: Blocker | null; onRetry: () => void }) {
+  // Rastgele şehir demosu YOK. Engelin türüne göre kullanıcıyı DOĞRU yere gönderiyoruz:
+  // konum servisi kapalıysa izin istemek işe yaramaz — sistem konum ayarları açılmalı.
+  const isAndroid = Platform.OS === "android";
+
+  const view = {
+    services: {
+      title: "Cihazının konumu kapalı",
+      text: "Telefonunun konum servisi (GPS) kapalı olduğu için çevrendeki mekanları bulamıyoruz. Konumu açman yeterli — gerisini biz hallederiz.",
+      cta: "Konum ayarlarını aç",
+      onPress: openLocationSettings,
+      note: isAndroid
+        ? "Ayarları açıp konumu etkinleştir, geri dön — otomatik devam edeceğiz."
+        : "Ayarlar › Gizlilik ve Güvenlik › Konum Servisleri → aç, sonra Volicious'a izin ver.",
+    },
+    "permission-blocked": {
+      title: "Konum izni kapalı",
+      text: "Volicious'un konumuna erişimi engellenmiş. İzni uygulama ayarlarından açtıktan sonra buraya dönüp tekrar dene.",
+      cta: "Uygulama ayarlarını aç",
+      onPress: openAppSettings,
+      note: isAndroid
+        ? "Ayarlar › Uygulamalar › Volicious › İzinler › Konum."
+        : "Ayarlar › Volicious › Konum › Uygulamayı Kullanırken.",
+    },
+    unavailable: {
+      title: "Konumuna ulaşamadık",
+      text: "Sinyal zayıf olabilir ya da işlem zaman aşımına uğradı. Açık bir alana geçip tekrar denemek genelde çözer.",
+      cta: "Tekrar dene",
+      onPress: onRetry,
+      note: "Sorun sürerse cihazının konum ayarlarını kontrol et.",
+    },
+    permission: {
+      title: "Konumunu paylaş",
+      text: "Volicious, çevrendeki gerçekten en iyi mekanları bulmak için konumunu kullanır. Konum izni olmadan sana özel liste gösteremeyiz.",
+      cta: "Konum iznini ver",
+      onPress: onRetry,
+      note: "Konumun yalnızca yakınındaki mekanları bulmak için kullanılır.",
+    },
+  }[blocker ?? "permission"];
+
   return (
     <View style={s.limit}>
-      <Text style={s.limitTitle}>Konumunu paylaş</Text>
-      <Text style={s.limitText}>
-        Volicious, çevrendeki gerçekten en iyi mekanları bulmak için konumunu kullanır.
-        Konum izni olmadan sana özel liste gösteremeyiz.
-      </Text>
+      <Text style={s.limitTitle}>{view.title}</Text>
+      <Text style={s.limitText}>{view.text}</Text>
       <Pressable
-        onPress={onGrant}
+        onPress={view.onPress}
         style={({ pressed }) => [s.limitCta, pressed && { opacity: 0.75 }]}
       >
-        <Text style={s.limitCtaText}>Konum iznini ver</Text>
+        <Text style={s.limitCtaText}>{view.cta}</Text>
       </Pressable>
-      <Text style={s.limitNote}>İzni kalıcı reddettiysen: Ayarlar › Uygulamalar › Volicious › İzinler.</Text>
+      <Text style={s.limitNote}>{view.note}</Text>
+      {/* Ayarlardan dönüp otomatik denemeyi kaçıranlar için elle tetikleyici. */}
+      {blocker === "services" && (
+        <Pressable onPress={onRetry} hitSlop={8} style={{ marginTop: 10 }}>
+          <Text style={s.limitLink}>Açtım, tekrar dene</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -443,5 +513,18 @@ const s = StyleSheet.create({
     marginTop: 18,
   },
   limitCtaText: { fontFamily: font.semibold, fontSize: 14, color: colors.paper },
-  limitNote: { fontFamily: font.mono, fontSize: 11, color: colors.stone, marginTop: 12 },
+  limitNote: {
+    fontFamily: font.mono,
+    fontSize: 11,
+    lineHeight: 17,
+    color: colors.stone,
+    marginTop: 12,
+    textAlign: "center",
+  },
+  limitLink: {
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: colors.sage,
+    textDecorationLine: "underline",
+  },
 });
