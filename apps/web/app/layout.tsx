@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { headers } from "next/headers";
 import { Hanken_Grotesk, JetBrains_Mono, Fraunces } from "next/font/google";
+import { normalizeLocale } from "@truebite/shared";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -31,22 +33,21 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+// Sayfa başlığı/açıklaması her rotanın kendi `metadata`'sında (dile göre). Burada yalnızca
+// tüm sayfalar için ortak olan taban ayarlar durur.
 export const metadata: Metadata = {
-  title: "Volicious — Sahte yorum yok, sadece en iyi mekanlar",
-  description:
-    "Konumuna en yakın, gerçekten en iyi puanlı restoranlar. Az yorumlu şişirilmiş puanları eleyen RealScore algoritmasıyla — dürüst, nokta atışı keşif.",
   metadataBase: new URL("https://volicious.app"),
-  openGraph: {
-    title: "Volicious — Sahte yorum yok, sadece en iyi mekanlar",
-    description:
-      "Şişirilmiş 5.0'ları eleyen, köklü mekanları öne çıkaran RealScore'la gerçek keşif.",
-    type: "website",
-  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * `<html lang>` sayfanın diline göre değişmeli (erişilebilirlik + SEO). Tek bir kök layout
+ * olduğundan dili middleware'in eklediği `x-locale` başlığından okuruz (yol önekinden türetilir).
+ */
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = normalizeLocale((await headers()).get("x-locale"));
+
   return (
-    <html lang="tr" className={`${hanken.variable} ${fraunces.variable} ${mono.variable}`}>
+    <html lang={lang} className={`${hanken.variable} ${fraunces.variable} ${mono.variable}`}>
       <body className="relative">
         {adsenseClient && (
           <Script

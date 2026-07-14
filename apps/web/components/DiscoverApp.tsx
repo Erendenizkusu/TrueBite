@@ -2,8 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { NearbyResult } from "@truebite/shared";
+import {
+  categoryCtaNoun,
+  categoryLabel,
+  type Locale,
+  type NearbyResult,
+} from "@truebite/shared";
 import { CATEGORIES } from "@/lib/categories";
+import { getDict } from "@/lib/i18n";
 import { getClientId } from "@/lib/clientId";
 import { MapBackdrop } from "./MapBackdrop";
 import { FoodRain } from "./FoodRain";
@@ -13,7 +19,8 @@ import { LocationHelp, type GeoBlocker } from "./LocationHelp";
 
 type Status = "idle" | "locating" | "ready" | "denied";
 
-export function DiscoverApp() {
+export function DiscoverApp({ locale }: { locale: Locale }) {
+  const t = getDict(locale);
   const [catIdx, setCatIdx] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -134,32 +141,31 @@ export function DiscoverApp() {
         <div className="relative z-10 mx-auto w-full max-w-4xl px-5 py-16 text-center">
           <p className="rise inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-stone backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-sage" />
-            Dürüst mekan keşfi
+            {t.hero.eyebrow}
           </p>
 
           <h1 className="rise mx-auto mt-6 max-w-3xl font-display text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.01em] sm:text-[3.6rem]">
-            Gözlerini kapat!
+            {t.hero.titleLine1}
             <br />
-            <em className="font-medium italic text-sage">Seni harika bir yere götürüyorum.</em>
+            <em className="font-medium italic text-sage">{t.hero.titleLine2}</em>
           </h1>
 
           <p className="rise mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-stone sm:text-base">
-            Algoritmamız şişirilmiş ve sahte puanları ayıkladı, binlerce yorumu ağırlıklandırdı.
-            Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
-            <strong className="font-semibold text-ink">Hadi tıkla da gidelim.</strong>
+            {t.hero.sub}{" "}
+            <strong className="font-semibold text-ink">{t.hero.subStrong}</strong>
           </p>
 
             {/* kategori filtreleri — mobilde yatay kaydırma, geniş ekranda ortalı sarma */}
             <div
               role="tablist"
-              aria-label="Mekan kategorisi"
+              aria-label={t.hero.categoryTablist}
               className="rise no-scrollbar -mx-5 mt-8 flex snap-x gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible"
             >
               {CATEGORIES.map((c, i) => {
                 const active = i === catIdx;
                 return (
                   <button
-                    key={c.label}
+                    key={c.key}
                     role="tab"
                     aria-selected={active}
                     onClick={() => setCatIdx(i)}
@@ -169,7 +175,7 @@ export function DiscoverApp() {
                         : "border border-line bg-surface/80 font-medium text-ink backdrop-blur hover:border-sage/50"
                     }`}
                   >
-                    {c.label}
+                    {categoryLabel(c, locale)}
                   </button>
                 );
               })}
@@ -188,26 +194,23 @@ export function DiscoverApp() {
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-paper" />
                 </span>
                 {status === "locating"
-                  ? "Konumun bulunuyor…"
-                  : `Konumumdaki en popüler ${cat.ctaNoun} listele`}
+                  ? t.hero.ctaLoading
+                  : t.hero.cta(categoryCtaNoun(cat, locale))}
               </button>
 
               {status === "denied" ? (
                 // Konum engellendi → tek satırlık mesaj YETMİYOR (kullanıcılar konumu nereden
                 // açacaklarını bulamıyordu). OS + tarayıcıya özel adım adım yönerge gösteriyoruz.
-                <LocationHelp blocker={blocker} onRetry={locateAndSearch} />
+                <LocationHelp blocker={blocker} onRetry={locateAndSearch} locale={locale} />
               ) : (
-                <p className="mx-auto mt-4 max-w-sm text-xs text-stone">
-                  Tek dokunuş. Konumundaki en iyileri RealScore&apos;a göre sıralayalım — şişirilmiş
-                  puanlar elenir.
-                </p>
+                <p className="mx-auto mt-4 max-w-sm text-xs text-stone">{t.hero.hint}</p>
               )}
             </div>
           </div>
 
           {/* alt şerit — marka mottosu (ref: müze kapsiyonu) */}
           <p className="absolute inset-x-0 bottom-5 z-10 hidden text-center font-mono text-[11px] uppercase tracking-[0.28em] text-stone/70 sm:block">
-            No fake reviews · just the best spots
+            {t.hero.motto}
           </p>
       </section>
 
@@ -216,31 +219,37 @@ export function DiscoverApp() {
         <section ref={resultsRef} className="relative z-10 mx-auto max-w-3xl scroll-mt-4 px-5 pb-24 sm:px-8">
           <div className="flex items-center justify-between border-b border-line py-4">
             <h2 className="font-display text-lg font-bold tracking-[-0.02em] sm:text-xl">
-              {cat.key === "all" ? "En iyi mekanlar" : `En iyi ${cat.label.toLowerCase()} mekanları`}
+              {cat.key === "all"
+                ? t.results.headingAll
+                : t.results.heading(categoryLabel(cat, locale))}
             </h2>
             {quota?.remaining != null && !quotaExceeded ? (
-              <span className="font-mono text-[11px] text-stone" title="Bugünkü ücretsiz keşif hakkın">
-                bugün {quota.remaining} keşif kaldı
+              <span className="font-mono text-[11px] text-stone">
+                {t.results.quotaLeft(quota.remaining)}
               </span>
             ) : data ? (
               <span className="font-mono text-[11px] text-stone">
-                {isFetching ? "sıralanıyor…" : data.cacheHit ? "● anlık" : "● az önce güncellendi"}
+                {isFetching
+                  ? t.results.sorting
+                  : data.cacheHit
+                    ? t.results.cached
+                    : t.results.fresh}
               </span>
             ) : null}
           </div>
 
           {quotaExceeded ? (
-            <LimitReached onWatchAd={watchAdForMore} granting={granting} />
+            <LimitReached onWatchAd={watchAdForMore} granting={granting} locale={locale} />
           ) : isFetching && places.length === 0 ? (
             <Loading />
           ) : isError ? (
-            <ErrorState onRetry={() => refetch()} />
+            <ErrorState onRetry={() => refetch()} locale={locale} />
           ) : places.length === 0 ? (
-            <Empty />
+            <Empty locale={locale} />
           ) : (
             <ol>
               {places.map((p, i) => (
-                <SpotRow key={p.placeId} place={p} rank={i + 1} />
+                <SpotRow key={p.placeId} place={p} rank={i + 1} locale={locale} />
               ))}
             </ol>
           )}
@@ -277,54 +286,56 @@ function Loading() {
   );
 }
 
-function Empty() {
+function Empty({ locale }: { locale: Locale }) {
+  const t = getDict(locale).results;
   return (
     <div className="mt-6 rounded-2xl border border-dashed border-line bg-surface px-6 py-16 text-center">
-      <p className="font-mono text-sm text-stone">bu kategoride yakınında mekan bulunamadı</p>
-      <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">
-        Yarıçapı genişletmeyi ya da farklı bir kategori denemeyi dene.
-      </p>
+      <p className="font-mono text-sm text-stone">{t.emptyTitle}</p>
+      <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">{t.emptyText}</p>
     </div>
   );
 }
 
-function LimitReached({ onWatchAd, granting }: { onWatchAd: () => void; granting: boolean }) {
+function LimitReached({
+  onWatchAd,
+  granting,
+  locale,
+}: {
+  onWatchAd: () => void;
+  granting: boolean;
+  locale: Locale;
+}) {
   // Kota doldu — maliyet güvenliği (altın kural). Kullanıcıyı reklamla ödüllendir ya da yarını beklet.
+  const t = getDict(locale).limit;
   return (
     <div className="mt-6 rounded-2xl border border-sage/40 bg-sage/10 px-6 py-16 text-center">
-      <p className="font-display text-lg font-bold tracking-[-0.01em] text-ink">
-        Bugünlük ücretsiz keşif hakkın doldu
-      </p>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-stone">
-        Kaliteli mekan verisi bize maliyet doğurur; adil kullanım için günlük bir sınır var.
-        Kısa bir reklam izleyerek bir keşif daha açabilir ya da yarın devam edebilirsin.
-      </p>
+      <p className="font-display text-lg font-bold tracking-[-0.01em] text-ink">{t.title}</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-stone">{t.text}</p>
       <button
         onClick={onWatchAd}
         disabled={granting}
         aria-busy={granting}
         className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-sage px-5 text-sm font-semibold text-paper transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:translate-y-0 disabled:opacity-70"
       >
-        {granting ? "hazırlanıyor…" : "Reklam izle → 1 keşif daha"}
+        {granting ? t.ctaBusy : t.cta}
       </button>
-      <p className="mx-auto mt-3 text-[11px] text-stone/70">Kota her gün sıfırlanır.</p>
+      <p className="mx-auto mt-3 text-[11px] text-stone/70">{t.note}</p>
     </div>
   );
 }
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
+function ErrorState({ onRetry, locale }: { onRetry: () => void; locale: Locale }) {
   // Sunucu/ağ hatası — "sonuç yok"tan ayrı; kullanıcıyı yanıltmaz, tekrar dene sunar.
+  const t = getDict(locale).results;
   return (
     <div className="mt-6 rounded-2xl border border-dashed border-ember/40 bg-ember-soft/40 px-6 py-16 text-center">
-      <p className="font-mono text-sm text-ember-ink">şu an listeye ulaşamadık</p>
-      <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">
-        Sunucuya bağlanırken bir sorun oldu. Birkaç saniye sonra tekrar dene.
-      </p>
+      <p className="font-mono text-sm text-ember-ink">{t.errorTitle}</p>
+      <p className="mx-auto mt-2 max-w-xs text-sm text-stone/80">{t.errorText}</p>
       <button
         onClick={onRetry}
         className="mt-5 inline-flex min-h-11 items-center rounded-full bg-sage px-5 text-sm font-semibold text-paper transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
       >
-        Tekrar dene
+        {t.retry}
       </button>
     </div>
   );

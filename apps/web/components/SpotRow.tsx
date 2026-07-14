@@ -2,11 +2,27 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { HIGHLIGHTS_MAX_RANK, type ScoredPlace, type HighlightsResult } from "@truebite/shared";
+import {
+  HIGHLIGHTS_MAX_RANK,
+  highlightLabel,
+  type Locale,
+  type ScoredPlace,
+  type HighlightsResult,
+} from "@truebite/shared";
 import { RealScoreBadge } from "./RealScoreBadge";
+import { getDict } from "@/lib/i18n";
 import { fmtDistance, fmtReviews } from "@/lib/format";
 
-export function SpotRow({ place, rank }: { place: ScoredPlace; rank: number }) {
+export function SpotRow({
+  place,
+  rank,
+  locale,
+}: {
+  place: ScoredPlace;
+  rank: number;
+  locale: Locale;
+}) {
+  const t = getDict(locale).results;
   const lead = rank === 1;
   // Maliyet güvenliği: AI öne çıkanlar yalnızca ilk N mekânda (her açış Google+AI maliyeti).
   const expandable = rank <= HIGHLIGHTS_MAX_RANK;
@@ -57,13 +73,13 @@ export function SpotRow({ place, rank }: { place: ScoredPlace; rank: number }) {
           )}
         </h3>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-stone">
-          <span>{fmtDistance(place.distanceM)}</span>
+          <span>{fmtDistance(place.distanceM, locale)}</span>
           <span aria-hidden className="text-line">·</span>
-          <span>{fmtReviews(place.userRatingsTotal)}</span>
+          <span>{fmtReviews(place.userRatingsTotal, locale)}</span>
         </div>
       </div>
 
-      <RealScoreBadge place={place} lead={lead} />
+      <RealScoreBadge place={place} lead={lead} locale={locale} />
     </>
   );
 
@@ -89,7 +105,7 @@ export function SpotRow({ place, rank }: { place: ScoredPlace; rank: number }) {
       {expandable && open && (
         <div className="ml-12 border-t border-dashed border-line/70 pb-5 pt-3 sm:ml-[4.5rem]">
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-stone/80">
-            Yorumlardan öne çıkanlar
+            {t.highlightsLabel}
           </p>
           {isFetching ? (
             <div className="flex flex-wrap gap-1.5" aria-hidden>
@@ -98,22 +114,20 @@ export function SpotRow({ place, rank }: { place: ScoredPlace; rank: number }) {
               ))}
             </div>
           ) : isError ? (
-            <p className="text-sm text-stone/70">Öne çıkanlar şu an yüklenemedi.</p>
+            <p className="text-sm text-stone/70">{t.highlightsError}</p>
           ) : tags.length > 0 ? (
             <ul className="flex flex-wrap gap-1.5">
-              {tags.map((t) => (
+              {tags.map((tag) => (
                 <li
-                  key={t}
+                  key={tag}
                   className="rounded-full border border-sage/40 bg-sage/10 px-2.5 py-1 text-xs font-medium text-pine"
                 >
-                  {t}
+                  {highlightLabel(tag, locale)}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-stone/70">
-              Bu mekân için henüz öne çıkan bir özellik derleyemedik.
-            </p>
+            <p className="text-sm text-stone/70">{t.highlightsEmpty}</p>
           )}
         </div>
       )}

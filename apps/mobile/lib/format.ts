@@ -1,27 +1,23 @@
-import type { ScoredPlace } from "@truebite/shared";
+// Biçimlendirme + güven etiketleri tek kaynakta yaşar: @truebite/shared (web ile birebir aynı
+// olmak zorunda). Burada cihaz diline sabitlenmiş ince sarmalayıcılar sunulur — çağıran her
+// yerde locale geçirmek zorunda kalmasın.
+import {
+  fmtDistance as fmtDistanceI18n,
+  fmtReviews as fmtReviewsI18n,
+  trustLabel as trustLabelI18n,
+  trustChip as trustChipI18n,
+  type Tone,
+  type ScoredPlace,
+} from "@truebite/shared";
+import { locale } from "@/lib/i18n";
 
-export type Tone = "pine" | "stone" | "ember";
+export type { Tone };
 
-/** Yorum sayısına göre güven etiketi — RealScore'un "neden" hikayesi. */
-export function trustLabel(reviews: number): { label: string; tone: Tone } {
-  if (reviews >= 1000) return { label: "köklü", tone: "pine" };
-  if (reviews >= 300) return { label: "güvenilir", tone: "pine" };
-  if (reviews >= 50) return { label: "yeni sayılır", tone: "stone" };
-  return { label: "az yorumlu", tone: "ember" };
-}
-
-export function fmtDistance(m: number): string {
-  if (m < 950) return `${Math.round(m)} m`;
-  return `${(m / 1000).toFixed(1)} km`;
-}
-
-export function fmtReviews(n: number): string {
-  if (n >= 1000) {
-    const b = (n / 1000).toFixed(1).replace(/\.0$/, "");
-    return `${b} B yorum`;
-  }
-  return `${n} yorum`;
-}
+export const fmtDistance = (m: number): string => fmtDistanceI18n(m, locale);
+export const fmtReviews = (n: number): string => fmtReviewsI18n(n, locale);
+export const trustChip = (reviews: number): string => trustChipI18n(reviews, locale);
+export const trustLabel = (reviews: number): { label: string; tone: Tone } =>
+  trustLabelI18n(reviews, locale);
 
 /** RealScore ile ham Google puanı arasındaki düzeltme (negatif = aşağı çekildi). */
 export function correction(p: ScoredPlace): number | null {

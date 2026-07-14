@@ -1,27 +1,9 @@
+// Biçimlendirme + güven etiketleri tek kaynakta yaşar: @truebite/shared (mobil ile birebir
+// aynı olmak zorunda). Burada yalnızca yeniden-export + web'e özgü `correction`.
 import type { ScoredPlace } from "@truebite/shared";
 
-export type Tone = "pine" | "stone" | "ember";
-
-/** Yorum sayısına göre güven etiketi — RealScore'un "neden" hikayesi. */
-export function trustLabel(reviews: number): { label: string; tone: Tone } {
-  if (reviews >= 1000) return { label: "köklü", tone: "pine" };
-  if (reviews >= 300) return { label: "güvenilir", tone: "pine" };
-  if (reviews >= 50) return { label: "yeni sayılır", tone: "stone" };
-  return { label: "az yorumlu", tone: "ember" };
-}
-
-export function fmtDistance(m: number): string {
-  if (m < 950) return `${Math.round(m)} m`;
-  return `${(m / 1000).toFixed(1)} km`;
-}
-
-export function fmtReviews(n: number): string {
-  if (n >= 1000) {
-    const b = (n / 1000).toFixed(1).replace(/\.0$/, "");
-    return `${b} B yorum`;
-  }
-  return `${n} yorum`;
-}
+export { fmtDistance, fmtReviews, trustLabel, trustChip } from "@truebite/shared";
+export type { Tone } from "@truebite/shared";
 
 /** RealScore ile ham Google puanı arasındaki düzeltme. Negatif = aşağı çekildi
  *  (şişirilmiş puan eleniyor) — ürünün değer önermesi. */

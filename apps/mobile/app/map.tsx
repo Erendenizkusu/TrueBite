@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNearby } from "@/lib/api";
 import { colors, font } from "@/lib/theme";
+import { t } from "@/lib/i18n";
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -37,14 +38,14 @@ export default function MapScreen() {
             key={p.placeId}
             coordinate={{ latitude: p.lat, longitude: p.lng }}
             title={`${i + 1}. ${p.name}`}
-            description={`RealScore ${p.realScore.toFixed(2)} · ${p.userRatingsTotal} yorum`}
+            description={`RealScore ${p.realScore.toFixed(2)} · ${t.map.reviews(p.userRatingsTotal)}`}
             pinColor={i === 0 ? colors.ember : undefined}
           />
         ))}
       </MapView>
 
       <Pressable style={[s.back, { top: insets.top + 12 }]} onPress={() => router.back()}>
-        <Text style={s.backText}>‹ liste</Text>
+        <Text style={s.backText}>{t.map.back}</Text>
       </Pressable>
     </View>
   );

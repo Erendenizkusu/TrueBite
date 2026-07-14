@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import type { ScoredPlace } from "@truebite/shared";
+import { categoryCtaNoun, categoryLabel, type ScoredPlace } from "@truebite/shared";
 import { fetchNearby, grantQuota } from "@/lib/api";
 import { showRewardedAd } from "@/lib/ads";
 import {
@@ -22,6 +22,7 @@ import {
   openAppSettings,
   type Blocker,
 } from "@/lib/location";
+import { locale, t } from "@/lib/i18n";
 import { colors, font, radius } from "@/lib/theme";
 import { CATEGORIES } from "@/lib/categories";
 import { Brand } from "@/components/Brand";
@@ -105,7 +106,7 @@ export default function Discover() {
       {!hasResults && <FoodRain />}
       <View style={s.header}>
         <Brand />
-        <Text style={s.headerTag}>GERÇEK PUAN, GERÇEK MEKAN</Text>
+        <Text style={s.headerTag}>{t.header.tagline}</Text>
       </View>
 
       <FlatList
@@ -179,18 +180,18 @@ function Hero({
     <View style={{ paddingTop: 20 }}>
       <View style={s.eyebrow}>
         <View style={s.eyebrowDot} />
-        <Text style={s.eyebrowText}>DÜRÜST MEKAN KEŞFİ</Text>
+        <Text style={s.eyebrowText}>{t.hero.eyebrow}</Text>
       </View>
 
       <Text style={s.h1}>
-        Gözlerini kapat!{"\n"}
-        <Text style={s.h1Italic}>Seni harika bir yere götürüyorum.</Text>
+        {t.hero.titleLine1}
+        {"\n"}
+        <Text style={s.h1Italic}>{t.hero.titleLine2}</Text>
       </Text>
 
       <Text style={s.sub}>
-        Algoritmamız şişirilmiş ve sahte puanları ayıkladı, binlerce yorumu ağırlıklandırdı.
-        Konumundaki en popüler ve dürüst mekanlar tek tıkla karşında.{" "}
-        <Text style={{ color: colors.ink, fontFamily: font.semibold }}>Hadi tıkla da gidelim.</Text>
+        {t.hero.sub}{" "}
+        <Text style={{ color: colors.ink, fontFamily: font.semibold }}>{t.hero.subStrong}</Text>
       </Text>
 
       {/* kategori filtreleri — yatay kaydırma */}
@@ -204,12 +205,12 @@ function Hero({
           const active = i === catIdx;
           return (
             <Pressable
-              key={c.label}
+              key={c.key}
               onPress={() => onCat(i)}
               style={[s.chip, active ? s.chipActive : s.chipIdle]}
             >
               <Text style={[s.chipText, { color: active ? colors.paper : colors.ink }]}>
-                {c.label}
+                {categoryLabel(c, locale)}
               </Text>
             </Pressable>
           );
@@ -224,37 +225,37 @@ function Hero({
       >
         <View style={s.ctaDot} />
         <Text style={s.ctaText}>
-          {locating ? "Konumun bulunuyor…" : `Konumumdaki en popüler ${cat.ctaNoun} listele`}
+          {locating ? t.hero.ctaLoading : t.hero.cta(categoryCtaNoun(cat, locale))}
         </Text>
       </Pressable>
 
       <Text style={s.note}>
         {status !== "denied"
-          ? "Tek dokunuş. En iyileri RealScore'a göre sıralarız — şişirilmiş puanlar elenir."
+          ? t.hero.hint
           : blocker === "services"
-            ? "Cihazının konumu kapalı — aşağıdan konum ayarlarını açabilirsin."
+            ? t.hero.hintServices
             : blocker === "permission-blocked"
-              ? "Konum izni engellenmiş — aşağıdan uygulama ayarlarını açabilirsin."
+              ? t.hero.hintPermissionBlocked
               : blocker === "unavailable"
-                ? "Konumuna ulaşılamadı — aşağıdan tekrar deneyebilirsin."
-                : "Konum izni gerekli — en iyi mekanları görmek için aşağıdan paylaş."}
+                ? t.hero.hintUnavailable
+                : t.hero.hintPermission}
       </Text>
 
       {/* sonuç başlığı */}
       {resultCount != null && (
         <View style={s.listHead}>
           <Text style={s.listLabel}>
-            {cat.key === "all" ? "EN İYİ MEKANLAR" : `EN İYİ ${cat.label.toUpperCase()} MEKANLARI`}
+            {cat.key === "all" ? t.hero.headingAll : t.hero.heading(categoryLabel(cat, locale))}
           </Text>
           <Pressable onPress={onMap} hitSlop={8}>
             <Text style={s.mapLink}>
               {remaining != null
-                ? `${remaining} keşif kaldı · harita`
+                ? t.hero.quotaLeft(remaining)
                 : cacheHit == null
                   ? ""
                   : cacheHit
-                    ? "● anlık · harita"
-                    : "● güncel · harita"}
+                    ? t.hero.cached
+                    : t.hero.fresh}
             </Text>
           </Pressable>
         </View>
@@ -286,8 +287,8 @@ function Skeleton() {
 function Empty() {
   return (
     <View style={s.empty}>
-      <Text style={s.emptyTitle}>bu kategoride yakınında mekan bulunamadı</Text>
-      <Text style={s.emptyText}>Farklı bir kategori ya da daha geniş bir alan dene.</Text>
+      <Text style={s.emptyTitle}>{t.empty.title}</Text>
+      <Text style={s.emptyText}>{t.empty.text}</Text>
     </View>
   );
 }
@@ -297,38 +298,35 @@ function LocationPrompt({ blocker, onRetry }: { blocker: Blocker | null; onRetry
   // konum servisi kapalıysa izin istemek işe yaramaz — sistem konum ayarları açılmalı.
   const isAndroid = Platform.OS === "android";
 
+  const L = t.location;
   const view = {
     services: {
-      title: "Cihazının konumu kapalı",
-      text: "Telefonunun konum servisi (GPS) kapalı olduğu için çevrendeki mekanları bulamıyoruz. Konumu açman yeterli — gerisini biz hallederiz.",
-      cta: "Konum ayarlarını aç",
+      title: L.servicesTitle,
+      text: L.servicesText,
+      cta: L.servicesCta,
       onPress: openLocationSettings,
-      note: isAndroid
-        ? "Ayarları açıp konumu etkinleştir, geri dön — otomatik devam edeceğiz."
-        : "Ayarlar › Gizlilik ve Güvenlik › Konum Servisleri → aç, sonra Volicious'a izin ver.",
+      note: isAndroid ? L.servicesNoteAndroid : L.servicesNoteIos,
     },
     "permission-blocked": {
-      title: "Konum izni kapalı",
-      text: "Volicious'un konumuna erişimi engellenmiş. İzni uygulama ayarlarından açtıktan sonra buraya dönüp tekrar dene.",
-      cta: "Uygulama ayarlarını aç",
+      title: L.blockedTitle,
+      text: L.blockedText,
+      cta: L.blockedCta,
       onPress: openAppSettings,
-      note: isAndroid
-        ? "Ayarlar › Uygulamalar › Volicious › İzinler › Konum."
-        : "Ayarlar › Volicious › Konum › Uygulamayı Kullanırken.",
+      note: isAndroid ? L.blockedNoteAndroid : L.blockedNoteIos,
     },
     unavailable: {
-      title: "Konumuna ulaşamadık",
-      text: "Sinyal zayıf olabilir ya da işlem zaman aşımına uğradı. Açık bir alana geçip tekrar denemek genelde çözer.",
-      cta: "Tekrar dene",
+      title: L.unavailableTitle,
+      text: L.unavailableText,
+      cta: L.unavailableCta,
       onPress: onRetry,
-      note: "Sorun sürerse cihazının konum ayarlarını kontrol et.",
+      note: L.unavailableNote,
     },
     permission: {
-      title: "Konumunu paylaş",
-      text: "Volicious, çevrendeki gerçekten en iyi mekanları bulmak için konumunu kullanır. Konum izni olmadan sana özel liste gösteremeyiz.",
-      cta: "Konum iznini ver",
+      title: L.permissionTitle,
+      text: L.permissionText,
+      cta: L.permissionCta,
       onPress: onRetry,
-      note: "Konumun yalnızca yakınındaki mekanları bulmak için kullanılır.",
+      note: L.permissionNote,
     },
   }[blocker ?? "permission"];
 
@@ -346,7 +344,7 @@ function LocationPrompt({ blocker, onRetry }: { blocker: Blocker | null; onRetry
       {/* Ayarlardan dönüp otomatik denemeyi kaçıranlar için elle tetikleyici. */}
       {blocker === "services" && (
         <Pressable onPress={onRetry} hitSlop={8} style={{ marginTop: 10 }}>
-          <Text style={s.limitLink}>Açtım, tekrar dene</Text>
+          <Text style={s.limitLink}>{L.servicesRetry}</Text>
         </Pressable>
       )}
     </View>
@@ -357,21 +355,16 @@ function LimitReached({ onWatchAd, granting }: { onWatchAd: () => void; granting
   // Kota doldu — maliyet güvenliği (altın kural). Reklamla ödüllendir ya da yarını beklet.
   return (
     <View style={s.limit}>
-      <Text style={s.limitTitle}>Bugünlük ücretsiz keşif hakkın doldu</Text>
-      <Text style={s.limitText}>
-        Kaliteli mekan verisi bize maliyet doğurur; adil kullanım için günlük bir sınır var.
-        Kısa bir reklam izleyerek bir keşif daha açabilir ya da yarın devam edebilirsin.
-      </Text>
+      <Text style={s.limitTitle}>{t.limit.title}</Text>
+      <Text style={s.limitText}>{t.limit.text}</Text>
       <Pressable
         onPress={onWatchAd}
         disabled={granting}
         style={({ pressed }) => [s.limitCta, (pressed || granting) && { opacity: 0.75 }]}
       >
-        <Text style={s.limitCtaText}>
-          {granting ? "hazırlanıyor…" : "Reklam izle → 1 keşif daha"}
-        </Text>
+        <Text style={s.limitCtaText}>{granting ? t.limit.ctaBusy : t.limit.cta}</Text>
       </Pressable>
-      <Text style={s.limitNote}>Kota her gün sıfırlanır.</Text>
+      <Text style={s.limitNote}>{t.limit.note}</Text>
     </View>
   );
 }

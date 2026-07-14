@@ -1,6 +1,8 @@
 import { Text, View, StyleSheet } from "react-native";
 import type { ScoredPlace } from "@truebite/shared";
 import { colors, font } from "@/lib/theme";
+import { t } from "@/lib/i18n";
+import { trustChip } from "@/lib/format";
 
 /**
  * Müşteri-dostu rozet (web ile aynı): büyük Volicious Puanı + kanıt olarak ham Google
@@ -15,13 +17,13 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
       <Text style={[s.score, { color: lead ? colors.ember : colors.ink, fontSize: lead ? 32 : 27 }]}>
         {place.realScore.toFixed(2)}
       </Text>
-      <Text style={s.label}>VOLICIOUS PUANI</Text>
+      <Text style={s.label}>{t.spot.scoreLabel}</Text>
       {place.rating != null && (
         <Text style={s.raw}>Google ★ {place.rating.toFixed(1)}</Text>
       )}
       <View style={[s.chip, { backgroundColor: strong ? colors.sageSoft : colors.emberSoft }]}>
         <Text style={[s.chipText, { color: strong ? colors.sageInk : colors.emberInk }]}>
-          {strong ? "✓ güvenilir" : "az yorumlu"}
+          {trustChip(place.userRatingsTotal)}
         </Text>
       </View>
     </View>

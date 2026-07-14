@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
-import { HIGHLIGHTS_MAX_RANK, type ScoredPlace } from "@truebite/shared";
+import { HIGHLIGHTS_MAX_RANK, highlightLabel, type ScoredPlace } from "@truebite/shared";
 import { colors, font } from "@/lib/theme";
+import { locale, t } from "@/lib/i18n";
 import { fmtDistance, fmtReviews } from "@/lib/format";
 import { fetchHighlights } from "@/lib/api";
 import { RealScoreBadge } from "./RealScoreBadge";
@@ -68,19 +69,19 @@ export function SpotCard({ place, rank }: { place: ScoredPlace; rank: number }) 
 
       {open && (
         <View style={s.panel}>
-          <Text style={s.panelLabel}>YORUMLARDAN ÖNE ÇIKANLAR</Text>
+          <Text style={s.panelLabel}>{t.spot.highlightsLabel}</Text>
           {isFetching ? (
-            <Text style={s.panelMuted}>derleniyor…</Text>
+            <Text style={s.panelMuted}>{t.spot.highlightsLoading}</Text>
           ) : tags.length > 0 ? (
             <View style={s.tags}>
-              {tags.map((t) => (
-                <View key={t} style={s.tag}>
-                  <Text style={s.tagText}>{t}</Text>
+              {tags.map((tag) => (
+                <View key={tag} style={s.tag}>
+                  <Text style={s.tagText}>{highlightLabel(tag, locale)}</Text>
                 </View>
               ))}
             </View>
           ) : (
-            <Text style={s.panelMuted}>Bu mekân için henüz öne çıkan bir özellik derleyemedik.</Text>
+            <Text style={s.panelMuted}>{t.spot.highlightsEmpty}</Text>
           )}
         </View>
       )}

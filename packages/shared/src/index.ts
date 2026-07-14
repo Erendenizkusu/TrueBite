@@ -17,3 +17,16 @@ export {
 export type { NearbyQuery, Place, ScoredPlace, NearbyResult } from "./schema.ts";
 export { HIGHLIGHT_TAGS, highlightsSchema, HIGHLIGHTS_MAX_RANK } from "./highlights.ts";
 export type { HighlightTag, Highlights, HighlightsResult } from "./highlights.ts";
+export {
+  LOCALES,
+  DEFAULT_LOCALE,
+  normalizeLocale,
+  categoryLabel,
+  categoryCtaNoun,
+  highlightLabel,
+  fmtDistance,
+  fmtReviews,
+  trustLabel,
+  trustChip,
+} from "./i18n.ts";
+export type { Locale, Tone } from "./i18n.ts";

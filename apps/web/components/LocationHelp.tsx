@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import type { Locale } from "@truebite/shared";
+import { getDict } from "@/lib/i18n";
 import {
   detectBrowser,
   detectOs,
@@ -21,11 +23,14 @@ export type GeoBlocker = "permission" | "services" | "timeout" | "unsupported";
 export function LocationHelp({
   blocker,
   onRetry,
+  locale,
 }: {
   blocker: GeoBlocker | null;
   onRetry: () => void;
+  locale: Locale;
 }) {
   const [showOther, setShowOther] = useState(false);
+  const t = getDict(locale).location;
   // İlk render'da userAgent'a bakmak güvenli: bu bileşen yalnızca kullanıcı butona bastıktan
   // sonra (istemcide) görünür → SSR/hydration uyuşmazlığı doğmaz.
   const os: Os = detectOs();
@@ -33,56 +38,48 @@ export function LocationHelp({
 
   if (blocker === "unsupported") {
     return (
-      <Panel title="Tarayıcın konum desteklemiyor">
-        <p className="text-sm text-stone">
-          Bu tarayıcı konum paylaşımını desteklemiyor. Chrome, Edge, Safari ya da Firefox'un güncel
-          bir sürümüyle tekrar dener misin?
-        </p>
-        <RetryButton onRetry={onRetry} />
+      <Panel title={t.unsupportedTitle}>
+        <p className="text-sm text-stone">{t.unsupportedText}</p>
+        <RetryButton onRetry={onRetry} label={t.retry} />
       </Panel>
     );
   }
 
   if (blocker === "timeout") {
     return (
-      <Panel title="Konumuna ulaşamadık">
-        <p className="text-sm text-stone">
-          Sinyal zayıf olabilir ya da işlem zaman aşımına uğradı. Birkaç saniye sonra tekrar denemek
-          genelde çözer.
-        </p>
-        <RetryButton onRetry={onRetry} />
+      <Panel title={t.timeoutTitle}>
+        <p className="text-sm text-stone">{t.timeoutText}</p>
+        <RetryButton onRetry={onRetry} label={t.retry} />
         <Toggle open={showOther} onToggle={() => setShowOther((v) => !v)}>
-          Konumum kapalı olabilir mi?
+          {t.toggleFromPermission}
         </Toggle>
-        {showOther && <Steps steps={servicesSteps(os, browser)} />}
+        {showOther && <Steps steps={servicesSteps(os, browser, locale)} />}
       </Panel>
     );
   }
 
   const isServices = blocker === "services";
-  const primary = isServices ? servicesSteps(os, browser) : permissionSteps(os, browser);
-  const secondary = isServices ? permissionSteps(os, browser) : servicesSteps(os, browser);
+  const primary = isServices
+    ? servicesSteps(os, browser, locale)
+    : permissionSteps(os, browser, locale);
+  const secondary = isServices
+    ? permissionSteps(os, browser, locale)
+    : servicesSteps(os, browser, locale);
 
   return (
     <Panel
-      title={isServices ? "Cihazının konumu kapalı" : "Konum izni verilmemiş"}
-      lead={
-        isServices
-          ? "Cihazının konum servisi kapalı olduğu için çevrendeki mekanları bulamıyoruz. Açmak birkaç saniye sürer:"
-          : "Bu siteye konum izni verilmemiş. Tarayıcından izni açman yeterli:"
-      }
+      title={isServices ? t.servicesTitle : t.permissionTitle}
+      lead={isServices ? t.servicesLead : t.permissionLead}
     >
       <Steps steps={primary} />
-      <RetryButton onRetry={onRetry} />
+      <RetryButton onRetry={onRetry} label={t.retry} />
       <Toggle open={showOther} onToggle={() => setShowOther((v) => !v)}>
-        {isServices ? "Konumum açık, yine de çalışmıyor" : "İzni verdim, yine de çalışmıyor"}
+        {isServices ? t.toggleFromServices : t.toggleFromPermission}
       </Toggle>
       {showOther && (
         <>
           <p className="mt-3 text-xs text-stone/80">
-            {isServices
-              ? "O zaman sorun tarayıcı izninde olabilir:"
-              : "O zaman cihazının konum servisi kapalı olabilir:"}
+            {isServices ? t.otherFromServices : t.otherFromPermission}
           </p>
           <Steps steps={secondary} />
         </>
@@ -124,13 +121,13 @@ function Steps({ steps }: { steps: string[] }) {
   );
 }
 
-function RetryButton({ onRetry }: { onRetry: () => void }) {
+function RetryButton({ onRetry, label }: { onRetry: () => void; label: string }) {
   return (
     <button
       onClick={onRetry}
       className="mt-5 inline-flex min-h-11 items-center rounded-full bg-sage px-5 text-sm font-semibold text-paper transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
     >
-      Açtım, tekrar dene
+      {label}
     </button>
   );
 }

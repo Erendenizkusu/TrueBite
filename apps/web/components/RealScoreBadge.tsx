@@ -1,4 +1,5 @@
-import type { ScoredPlace } from "@truebite/shared";
+import { trustChip, type Locale, type ScoredPlace } from "@truebite/shared";
+import { getDict } from "@/lib/i18n";
 
 /**
  * Müşteri-dostu rozet: büyük Volicious Puanı + kanıt olarak ham Google puanı +
@@ -6,7 +7,15 @@ import type { ScoredPlace } from "@truebite/shared";
  *   - çok yorumlu  → "✓ güvenilir"
  *   - az yorumlu   → "az yorumlu" (temkinli ol)
  */
-export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boolean }) {
+export function RealScoreBadge({
+  place,
+  lead,
+  locale,
+}: {
+  place: ScoredPlace;
+  lead?: boolean;
+  locale: Locale;
+}) {
   const strong = place.userRatingsTotal >= 300;
 
   return (
@@ -22,7 +31,7 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
         <span className="font-mono text-xs text-stone">/5</span>
       </div>
       <span className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-stone">
-        Volicious Puanı
+        {getDict(locale).score.label}
       </span>
 
       {place.rating != null && (
@@ -34,7 +43,7 @@ export function RealScoreBadge({ place, lead }: { place: ScoredPlace; lead?: boo
           strong ? "bg-pine-soft text-pine" : "bg-ember-soft text-ember-ink"
         }`}
       >
-        {strong ? "✓ güvenilir" : "az yorumlu"}
+        {trustChip(place.userRatingsTotal, locale)}
       </span>
     </div>
   );

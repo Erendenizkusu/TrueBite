@@ -54,7 +54,8 @@
           "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
         }
       ],
-      "./plugins/withKotlinMetadataSkip"
+      "./plugins/withKotlinMetadataSkip",
+      "expo-localization"
     ],
     "extra": {
       "router": {},
