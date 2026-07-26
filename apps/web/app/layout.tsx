@@ -37,6 +37,8 @@ const mono = JetBrains_Mono({
 // tüm sayfalar için ortak olan taban ayarlar durur.
 export const metadata: Metadata = {
   metadataBase: new URL("https://volicious.app"),
+  // Google Search Console mülk doğrulaması (HTML etiketi yöntemi). Sır değil.
+  verification: { google: "6yqYdHyfvqxV2XIwUCQQluPTJepwu9wrlqV5ndetK_c" },
 };
 
 /**
