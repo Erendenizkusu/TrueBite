@@ -3,10 +3,23 @@ import type { Locale } from "@truebite/shared";
 import { getDict, localePath, type Page } from "@/lib/i18n";
 import { Mark } from "./Mark";
 
-/** Dil değiştirici AYNI sayfanın öbür dildeki adresine gider (kullanıcıyı ana sayfaya atmaz). */
-export function SiteHeader({ locale, page = "home" }: { locale: Locale; page?: Page }) {
+/**
+ * Dil değiştirici AYNI sayfanın öbür dildeki adresine gider (kullanıcıyı ana sayfaya atmaz).
+ * `page` sabit sayfalar (home/about/privacy) için; `altHref` ise dinamik rehber sayfaları
+ * gibi `Page` sözlüğünde olmayan adresler için doğrudan öbür-dil URL'i verir (öncelikli).
+ */
+export function SiteHeader({
+  locale,
+  page = "home",
+  altHref,
+}: {
+  locale: Locale;
+  page?: Page;
+  altHref?: string;
+}) {
   const t = getDict(locale).nav;
   const other: Locale = locale === "tr" ? "en" : "tr";
+  const switchHref = altHref ?? localePath(other, page);
 
   return (
     <header className="absolute inset-x-0 top-0 z-30">
@@ -27,7 +40,7 @@ export function SiteHeader({ locale, page = "home" }: { locale: Locale; page?: P
             {t.tagline}
           </span>
           <Link
-            href={localePath(other, page)}
+            href={switchHref}
             hrefLang={other}
             aria-label={t.switchLabel}
             className="inline-flex min-h-9 items-center rounded-full border border-line bg-surface/80 px-3 font-mono text-[11px] uppercase tracking-[0.14em] text-stone backdrop-blur transition hover:border-sage/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
