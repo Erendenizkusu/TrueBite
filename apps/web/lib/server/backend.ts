@@ -54,7 +54,8 @@ function ctx(): Ctx {
 
   const nearbyDeps: NearbyDeps = {
     cellPrecision: config.CELL_PRECISION,
-    isCellFresh: (cellId, bucket) => isCellFresh(sb, cellId, bucket, config.CACHE_TTL_DAYS),
+    isCellFresh: (cellId, bucket, ttlDays) =>
+      isCellFresh(sb, cellId, bucket, ttlDays ?? config.CACHE_TTL_DAYS),
     fetchFromGoogle: (q) => {
       if (!config.GOOGLE_PLACES_API_KEY) {
         throw new Error("GOOGLE_PLACES_API_KEY tanımlı değil — cache-miss isteği yapılamıyor");
@@ -117,9 +118,13 @@ export function checkQuota(clientId: string): Promise<QuotaResult> {
   return consumeUserRequest(sb, clientId, config.FREE_REQUESTS_PER_DAY);
 }
 
-/** Nearby çekirdek akışı (cache + bütçe kapısı içeride). */
-export function runNearby(q: NearbyQuery): Promise<NearbyResult> {
-  return getNearby(q, ctx().nearbyDeps);
+/** Nearby çekirdek akışı (cache + bütçe kapısı içeride). opts.cacheTtlDays ile bu çağrıya özel
+ *  önbellek tazelik penceresi geçilebilir (şehir rehberi 30 gün kullanır → ana keşifi etkilemez). */
+export function runNearby(
+  q: NearbyQuery,
+  opts?: { cacheTtlDays?: number },
+): Promise<NearbyResult> {
+  return getNearby(q, ctx().nearbyDeps, opts);
 }
 
 /** Reklam izleme → +istek hakkı. */

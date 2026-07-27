@@ -20,6 +20,13 @@ import type { GuideLink } from "@/components/guide/GuidePage";
 const MAX_ROWS = 30;
 /** runNearby aday limiti (skorlanan havuz — "değerlendirilen" sayısı buradan). */
 const CANDIDATE_LIMIT = 60;
+/**
+ * Rehber hücrelerine özel önbellek tazelik penceresi (gün). Ana keşif akışı CACHE_TTL_DAYS (10)
+ * kullanır; rehber ikincil bir vitrin olduğu için (asıl işimiz konumla keşif) Google tazelemesini
+ * en aza indiririz: Google ToS'un izin verdiği tavan olan 30 güne çekildi → ~41 sabit hücrenin
+ * aylık Google maliyeti ~3'te 1'e iner. Mekan puanları 30 günde kayda değer değişmez. Altın kural.
+ */
+const GUIDE_CACHE_TTL_DAYS = 30;
 
 /**
  * Şehir çapı nearby sonucu — CROSS-REQUEST cache (1 gün). Kök layout headers() kullandığı
@@ -29,7 +36,10 @@ const CANDIDATE_LIMIT = 60;
  */
 const nearbyForGuide = unstable_cache(
   (lat: number, lng: number, radiusM: number, category: string) =>
-    runNearby({ lat, lng, radiusM, limit: CANDIDATE_LIMIT, category }),
+    runNearby(
+      { lat, lng, radiusM, limit: CANDIDATE_LIMIT, category },
+      { cacheTtlDays: GUIDE_CACHE_TTL_DAYS },
+    ),
   ["guide-nearby-v1"],
   { revalidate: 86400 },
 );

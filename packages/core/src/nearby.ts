@@ -13,7 +13,9 @@ import {
  */
 export interface NearbyDeps {
   cellPrecision: number;
-  isCellFresh: (cellId: string, bucket: number) => Promise<boolean>;
+  // ttlDays: opsiyonel tazelik penceresi override'ı (verilmezse çağıran, konfig varsayılanını
+  // kullanır). Şehir rehberi gibi seyrek-tazelenmesi yeterli yüzeyler daha uzun TTL geçer.
+  isCellFresh: (cellId: string, bucket: number, ttlDays?: number) => Promise<boolean>;
   fetchFromGoogle: (q: NearbyQuery) => Promise<Place[]>;
   upsertPlaces: (places: Place[]) => Promise<number>;
   touchCell: (cellId: string, bucket: number, count: number) => Promise<void>;
@@ -35,8 +37,15 @@ export interface NearbyDeps {
  *   3. Hayır/bayat → Google → upsert → cache_cells tazele → DB'den servis.
  *
  * Skorlama ve geo filtre DAİMA DB'de (nearby_places). Burada hesap yok.
+ *
+ * opts.cacheTtlDays: bu çağrıya özel önbellek tazelik penceresi (gün). Verilmezse deps'teki
+ * varsayılan kullanılır. Şehir rehberi bunu uzun (30 gün) geçer → seyrek Google tazelemesi.
  */
-export async function getNearby(q: NearbyQuery, deps: NearbyDeps): Promise<NearbyResult> {
+export async function getNearby(
+  q: NearbyQuery,
+  deps: NearbyDeps,
+  opts?: { cacheTtlDays?: number },
+): Promise<NearbyResult> {
   const cellId = toCellId(q.lat, q.lng, deps.cellPrecision);
   const bucket = radiusBucket(q.radiusM);
   // Kategori önbellek kimliğine katılır → her kategori kendi tazeliğine sahip
@@ -45,7 +54,7 @@ export async function getNearby(q: NearbyQuery, deps: NearbyDeps): Promise<Nearb
 
   let cacheHit = true;
   let budgetExceeded = false;
-  if (!(await deps.isCellFresh(freshnessKey, bucket))) {
+  if (!(await deps.isCellFresh(freshnessKey, bucket, opts?.cacheTtlDays))) {
     cacheHit = false;
     // Maliyet güvenliği: global bütçe tavanı dolmadıysa taze çek; dolduysa Google'a
     // GİTME — elde ne varsa (bayat/kısmi DB verisi) servis et (altın kural).
