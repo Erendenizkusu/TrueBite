@@ -64,6 +64,12 @@
         "projectId": "54410ef9-cbab-42c5-99f7-3e5c19dbd872"
       }
     },
-    "owner": "eren_denizkusu"
+    "owner": "eren_denizkusu",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/54410ef9-cbab-42c5-99f7-3e5c19dbd872"
+    }
   }
 }
