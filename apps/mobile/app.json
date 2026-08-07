@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "app.volicious",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz."
+        "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
