@@ -14,12 +14,13 @@
       "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "app.volicious",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "2"
     },
     "android": {
       "package": "app.volicious",
@@ -51,8 +52,7 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-2707472203466324~8911844974",
-          "iosAppId": "ca-app-pub-2707472203466324~4217861428",
-          "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
+          "iosAppId": "ca-app-pub-2707472203466324~4217861428"
         }
       ],
       "./plugins/withKotlinMetadataSkip",
