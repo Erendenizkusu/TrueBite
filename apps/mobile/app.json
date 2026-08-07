@@ -20,7 +20,7 @@
         "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "package": "app.volicious",
