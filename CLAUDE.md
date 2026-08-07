@@ -60,6 +60,13 @@ cd apps/mobile && npx expo start    # mobil
 `apps/api/.env` (GOOGLE_PLACES_API_KEY, ANTHROPIC_API_KEY, SUPABASE_*) **asla commit'lenmez** —
 `.gitignore` korur. `.env.example` yalnızca şablondur (boş anahtarlar).
 
+## ✍️ Yazışma kuralı (ÖNEMLİ)
+
+Kullanıcıya verilen metinlerde **uzun çizgi (—, em dash) ASLA kullanılmaz**: ne cümle
+ayırıcı olarak ne kelimeler arasında. Kullanıcı bunu bir AI kalıntısı olarak görüyor ve elle
+silmek zorunda kalıyor. Yerine normal noktalama kullan: virgül, nokta, iki nokta, parantez
+ya da cümleyi yeniden kur. Bu kural hem sohbet yanıtlarını hem üretilen içerik/metinleri kapsar.
+
 ## ⚙️ Oturum sonu / çıkış kuralı (ÖNEMLİ)
 
 Kullanıcı oturumu bitirdiğini belirttiğinde ("bu kadar yeter", "şimdilik bu kadar", çıkış, vb.):
