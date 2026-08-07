@@ -80,5 +80,5 @@ function shouldRedirectToEnglish(
 
 export const config = {
   // Statik dosyalar, API rotaları ve Next içi yollar dışındaki her şey.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon.svg|ads.txt|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon.svg|app-ads.txt|ads.txt|robots.txt|sitemap.xml).*)"],
 };
