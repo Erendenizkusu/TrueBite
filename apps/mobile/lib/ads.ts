@@ -17,7 +17,7 @@ import Constants, { ExecutionEnvironment } from "expo-constants";
  *   4. SSV (server-side verification) ileride: /api/quota/grant'ı AdMob callback'iyle koru.
  */
 const REWARDED_UNIT_ID_ANDROID = "ca-app-pub-2707472203466324/7167483078";
-const REWARDED_UNIT_ID_IOS = "ca-app-pub-0000000000000000/0000000000"; // TODO: iOS AdMob birim ID (Android-first)
+const REWARDED_UNIT_ID_IOS = "ca-app-pub-2707472203466324/6836285909";
 
 const inExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 const AD_TIMEOUT_MS = 30_000;

@@ -3,7 +3,7 @@
     "name": "Volicious",
     "slug": "volicious",
     "scheme": "volicious",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -50,7 +50,7 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-2707472203466324~8911844974",
-          "iosAppId": "ca-app-pub-0000000000000000~0000000000",
+          "iosAppId": "ca-app-pub-2707472203466324~4217861428",
           "userTrackingUsageDescription": "Sana daha alakalı reklamlar göstermek için kullanılır."
         }
       ],
